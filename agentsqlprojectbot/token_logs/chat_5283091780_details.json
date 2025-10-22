@@ -1,0 +1,74 @@
+{
+  "chat_id": 5283091780,
+  "username": "Bakr Sam",
+  "overall_statistics": {
+    "total_conversations": 1,
+    "total_tokens": {
+      "input": 214,
+      "output": 29,
+      "total": 243
+    },
+    "total_cost": {
+      "input": 6.42e-05,
+      "output": 7.25e-05,
+      "total": 0.0001367
+    },
+    "last_updated": "2025-10-19 18:50:57"
+  },
+  "conversations": [
+    {
+      "number": 1,
+      "timestamp": "2025-10-19 18:50:57",
+      "user_question": "كيفك",
+      "summary": {
+        "total_stages": 1,
+        "tokens": {
+          "input": 214,
+          "output": 29,
+          "total": 243
+        },
+        "cost": {
+          "input": 6.42e-05,
+          "output": 7.25e-05,
+          "total": 0.0001367
+        },
+        "models_breakdown": [
+          {
+            "name": "gemini-2.5-flash",
+            "times_used": 1,
+            "tokens": {
+              "input": 214,
+              "output": 29,
+              "total": 243
+            },
+            "cost": {
+              "input": 6.42e-05,
+              "output": 7.25e-05,
+              "total": 0.0001367
+            }
+          }
+        ],
+        "most_expensive_stage": {
+          "name": "Summary Generation",
+          "tokens": 243,
+          "percentage": 100.0
+        }
+      },
+      "stages": [
+        {
+          "stage_number": 1,
+          "stage_name": "Summary Generation",
+          "model": "gemini-2.5-flash",
+          "input_tokens": 214,
+          "output_tokens": 29,
+          "total_tokens": 243,
+          "cost": {
+            "input": 6.42e-05,
+            "output": 7.25e-05,
+            "total": 0.0001367
+          }
+        }
+      ]
+    }
+  ]
+}

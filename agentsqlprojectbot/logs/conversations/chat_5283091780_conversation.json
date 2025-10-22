@@ -1,0 +1,20 @@
+[
+  {
+    "timestamp": "2025-10-20 19:43:58",
+    "user_id": 5283091780,
+    "username": "Bakr Sam",
+    "question": "كيفك",
+    "answer": "أنا بخير، شكراً لك على السؤال!",
+    "sql_query": null,
+    "sql_result": null
+  },
+  {
+    "timestamp": "2025-10-20 19:53:41",
+    "user_id": 5283091780,
+    "username": "Bakr Sam",
+    "question": "ارسل ايميل الى bakr.12170@gmail.com يحتوي على سعر ارخص منتج",
+    "answer": "تم إنشاء معاينة الإيميل للمرسل إليهم: bakr.12170@gmail.com",
+    "sql_query": "SELECT TOP 1 Price FROM Products ORDER BY Price ASC",
+    "sql_result": null
+  }
+]

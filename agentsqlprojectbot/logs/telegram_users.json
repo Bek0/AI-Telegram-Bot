@@ -1,0 +1,26 @@
+{
+  "5283091780": {
+    "user_id": 5283091780,
+    "username": "Bakr Sam",
+    "first_name": "Bakr",
+    "last_name": "Sam",
+    "role": "org_owner",
+    "first_seen": "2025-10-07T22:09:54.958592",
+    "last_seen": "2025-10-19T14:04:46.835673",
+    "is_active": true,
+    "interaction_count": 371,
+    "current_database": "DB_20251020003718_31a0d713"
+  },
+  "7813181783": {
+    "user_id": 7813181783,
+    "username": "Ans Sam",
+    "first_name": "Ans",
+    "last_name": "Sam",
+    "role": "org_member",
+    "first_seen": "2025-10-07T23:06:31.488794",
+    "last_seen": "2025-10-19T02:28:45.880197",
+    "is_active": true,
+    "interaction_count": 62,
+    "current_database": "DB_20251020003718_31a0d713"
+  }
+}

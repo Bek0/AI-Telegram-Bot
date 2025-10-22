@@ -1,0 +1,105 @@
+graph TD
+    A["User Sends Message"] --> B["Bot Receives Update"]
+    B --> C{Message Type?}
+    
+    C -->|/start| D["Register/Update User"]
+    C -->|Command| E["Route to Command Handler"]
+    C -->|Text Message| F["Question Handler"]
+    
+    D --> D1["Create UserInfo<br/>Store in JSON"]
+    D1 --> D2["Send Welcome Message"]
+    D2 --> END1["End"]
+    
+    E --> E1{Which Command?}
+    E1 -->|/createorg| E2["Validate User<br/>Not in Org"]
+    E1 -->|/adddb| E3["Check Permissions<br/>Add Connection"]
+    E1 -->|/selectdb| E4["List Available DBs<br/>Set Active"]
+    E1 -->|/invite| E5["Generate Invite<br/>Code + Creds"]
+    E1 -->|/join| E6["Validate Invite<br/>Add Member"]
+    E1 -->|/clear| E7["Confirm Dialog"]
+    E1 -->|/org, /myinfo| E8["Display Info/Menu"]
+    
+    E2 --> E2A["Create Org ID"]
+    E2A --> E2B["Generate Dashboard Creds"]
+    E2B --> E2C["Create org_owner Role"]
+    E2C --> E2D["Send Credentials"]
+    E2D --> END2["End"]
+    
+    E3 --> E3A["Check org_owner"]
+    E3A --> E3B["Validate Connection"]
+    E3B --> E3C["Store Connection"]
+    E3C --> E3D["Notify Members"]
+    E3D --> END3["End"]
+    
+    E7 --> E7A{User Confirms?}
+    E7A -->|Yes| E7B["Delete Memory"]
+    E7A -->|No| E7C["Cancel"]
+    E7B --> E7D["Clear JSON Files"]
+    E7D --> END4["End"]
+    
+    F --> F1["Check Rate Limit<br/>1 req/sec, burst 3"]
+    F1 --> F2{Rate Limited?}
+    F2 -->|Yes| F2A["Send Wait Message"]
+    F2A --> END5["End"]
+    F2 -->|No| F3["Check Active<br/>Requests ≤ 1"]
+    F3 --> F3A{Max Reached?}
+    F3A -->|Yes| F3B["Send Queue Message"]
+    F3B --> END6["End"]
+    F3A -->|No| F4["Get Database"]
+    
+    F4 --> F5{DB Selected?}
+    F5 -->|No| F5A["Request DB Selection"]
+    F5A --> END7["End"]
+    F5 -->|Yes| F6["Stage 1: Analysis"]
+    
+    F6 --> F6A["Load Conversation<br/>History Last 5"]
+    F6A --> F6B["Call Gemini 2.5-Flash<br/>Analyze Question"]
+    F6B --> F6C["Generate Summary<br/>SQL Query Check"]
+    F6C --> F6D["Count Tokens<br/>Calculate Cost"]
+    F6D --> F7{What Method?}
+    
+    F7 -->|SQL Query| F8["Stage 2: Execute SQL"]
+    F7 -->|Direct Answer| F9["Use Summary Answer"]
+    F7 -->|Email| F10["Stage 3: Generate Email"]
+    
+    F8 --> F8A["Execute Query<br/>Against DB"]
+    F8A --> F8B["Call Gemini 2.0-Flash<br/>Process Results"]
+    F8B --> F8C["Generate Natural<br/>Language Response"]
+    F8C --> F8D["Count Tokens<br/>Calculate Cost"]
+    F8D --> F11["Save to Database"]
+    
+    F10 --> F10A["Extract Recipients<br/>from Context"]
+    F10A --> F10B["Call Gemini 2.5-Flash<br/>Generate Email"]
+    F10B --> F10C["Create Mail Object"]
+    F10C --> F10D["Count Tokens"]
+    F10D --> F11
+    
+    F9 --> F11["Save Conversation<br/>Update Memory"]
+    F11 --> F11A["Save to JSON<br/>Background Queue"]
+    F11A --> F11B["Store in SQL<br/>Conversation ID"]
+    F11B --> F11C["Save Stage Data<br/>Tokens + Costs"]
+    F11C --> F11D["Update Model Usage<br/>Aggregates"]
+    F11D --> F12["Send Response<br/>with Buttons"]
+    F12 --> F13{Has Email?}
+    F13 -->|Yes| F13A["Add Email Preview<br/>Send Button"]
+    F13 -->|No| F13B["Regular Response"]
+    F13A --> F14["User Receives<br/>Message"]
+    F13B --> F14
+    F14 --> END8["End"]
+    
+    F14 --> F15{User Clicks<br/>Email Button?}
+    F15 -->|Preview| F16["Show Email<br/>Confirmation"]
+    F16 --> F17{Confirm Send?}
+    F17 -->|Yes| F18["Call EmailService<br/>Send SMTP"]
+    F17 -->|No| F19["Cancel"]
+    F18 --> F20["Log Action"]
+    F20 --> END9["End"]
+    F19 --> END10["End"]
+    F15 -->|No| END11["End"]
+    
+    style A fill:#e1f5ff
+    style F6 fill:#fff3e0
+    style F8 fill:#f3e5f5
+    style F10 fill:#e8f5e9
+    style F11 fill:#fce4ec
+    style F18 fill:#e0f2f1
