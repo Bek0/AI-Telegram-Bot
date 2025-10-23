@@ -303,27 +303,6 @@ Example:
     Output: (903 / 1,000,000) * $0.3 = $0.0002709
     Total: $0.0003
 ```
-
-### What User Sees
-
-After each query, bot displays:
-```
-📊 Processing complete!
-
-[Answer text here]
-
----
-📊 Token usage: 2,735 total (765 input, 1,970 output)
-💰 Cost: $0.01846
-  • Stage 1 (Summary Gen): $0.00847
-  • Stage 2 (SQL Response): $0.00578
-  • Stage 3 (Email Gen): $0.00421
-
-Model breakdown:
-  • Gemini-2.5-Flash: 634 tokens
-  • Gemini-2.0-Flash: 856 tokens
-```
-
 ### Personal Statistics
 
 User can check stats anytime:
@@ -331,12 +310,10 @@ User can check stats anytime:
 /stats
   ↓
   Bot displays:
-    • Total queries: 234
-    • Total tokens used: 567,890
-    • Total cost: $12.34
-    • Average cost per query: $0.053
-    • Highest cost query: $0.145
-    • Most expensive day: Monday
+    • Total questions: 5 
+    • Total queries: 3
+    • First message: 20-10-2025 19:30:56
+    • Last message: 25-10-2025 10:00:51
 ```
 
 ---
@@ -373,12 +350,13 @@ Level 3: Database
 ```json
 [
   {
-    "timestamp": "2025-01-15 14:33:00",
-    "question": "What about Q3?",
-    "answer": "Q3 2024 sales were $1.05M (12% lower than Q4)",
-    "sql_query": "SELECT SUM(amount) FROM sales WHERE year=2024 AND quarter=3",
-    "tokens": 987,
-    "cost": 0.00634
+    "timestamp": ,
+    "user_id": ,
+    "username": ,
+    "question": ,
+    "answer": ,
+    "sql_query": ,
+    "sql_result": 
   }
 ]
 ```
@@ -723,21 +701,18 @@ Bot sends:
   ↓
 Bot displays:
   ┌──────────────────────────────┐
-  │ Organization: Acme Corp      │
-  │ Owner: John Smith            │
+  │ {ORG_NAME}                   │
+  │ ID:'ORG_2025101920525_djw29v'│
   │ Created: 2025-01-15          │
-  │                              │
-  │ Members: 5                   │
-  │ Databases: 3                 │
-  │                              │
+  │ Owner: John Smith            │
   │ Your role: member            │
   │                              │
   │ Members:                     │
-  │ • John Smith (owner)         │
-  │ • Sarah Davis (member)       │
-  │ • Mike Johnson (member)      │
-  │ • Emma Wilson (member)       │
-  │ • You (member)               │
+  │ • John Smith                 │
+  │ • Sarah Davis                │
+  │ • Mike Johnson               │
+  │ • Emma Wilson                │
+  │ • You                        │
   │                              │
   │ Databases:                   │
   │ • Sales DB                   │
@@ -789,15 +764,12 @@ Bot displays:
 /history
   ↓
 Bot displays last 10 queries:
-  1. "What were Q4 sales?" - 2025-01-15 14:32
-  2. "What about Q3?" - 2025-01-15 14:33
-  3. "Top 5 products?" - 2025-01-15 14:35
-  4. "Revenue by region?" - 2025-01-15 14:40
-  5. "Send summary to john" - 2025-01-15 14:45
+  1. "What were Q4 sales?"
+  2. "What about Q3?"
+  3. "Top 5 products?"
+  4. "Revenue by region?" 
+  5. "Send summary to john" 
   ...
-  
-  Each with cost displayed:
-  1. "What were Q4 sales?" - Cost: $0.0084
 ```
 
 ---
