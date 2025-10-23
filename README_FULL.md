@@ -1093,13 +1093,13 @@ When user sends message:
 ```json
 [
   {
-    "timestamp": "2025-01-15 14:32:10",
-    "user_id": 123456789,
-    "question": "What were sales last month?",
-    "answer": "Based on December 2024, total sales were $1.2M...",
-    "sql_query": "SELECT SUM(amount) FROM sales WHERE MONTH(date)=12",
-    "tokens": { "input": 342, "output": 903 },
-    "cost": 0.00847
+    "timestamp": ,
+    "user_id": ,
+    "username": ,
+    "question": ,
+    "answer": ,
+    "sql_query": ,
+    "sql_result": 
   },
   ...
 ]
