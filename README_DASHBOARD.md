@@ -2,6 +2,188 @@
 
 ## Overview
 
+```mermaid
+graph TD
+    Start["🌐 فتح الداشبورد"] --> Login["📄 صفحة تسجيل الدخول"]
+    Login --> EnterCreds["إدخال اسم المستخدم وكلمة المرور"]
+    EnterCreds --> SubmitLogin["إرسال POST /dashboard/login"]
+    SubmitLogin --> QueryDB["🔍 البحث في dashboard_users"]
+    QueryDB --> VerifyHash["التحقق من كلمة المرور"]
+    VerifyHash --> Valid{صحيحة؟}
+    
+    Valid -->|لا| LoginError["❌ خطأ في بيانات الدخول"]
+    LoginError --> EnterCreds
+    
+    Valid -->|نعم| CreateSession["🔐 إنشاء جلسة JWT"]
+    CreateSession --> StoreSession["حفظ في _sessions<br/>مدة 24 ساعة"]
+    StoreSession --> SaveLocal["💾 حفظ في localStorage"]
+    SaveLocal --> RedirectDash["↪️ الانتقال إلى /dashboard/"]
+    
+    %% ===== الصفحة الرئيسية =====
+    RedirectDash --> LoadDash["📊 تحميل لوحة المعلومات"]
+    LoadDash --> GetOverview["GET /dashboard/overview"]
+    GetOverview --> QueryOrg["🔍 استعلام organizations"]
+    QueryOrg --> QueryMembers["🔍 عدد الأعضاء"]
+    QueryMembers --> QueryDBs["🔍 عدد القواعد"]
+    QueryDBs --> QueryInvites["🔍 الدعوات النشطة"]
+    QueryInvites --> DisplayCards["📊 عرض البطاقات:<br/>👥 عدد الأعضاء<br/>🗄️ عدد القواعد<br/>🎫 الدعوات<br/>📅 تاريخ الإنشاء"]
+    
+    DisplayCards --> CheckRole{دور المستخدم؟}
+    
+    %% ===== عضو عادي =====
+    CheckRole -->|عضو عادي| MemberView["👁️ عرض محدود"]
+    MemberView --> HideTabs["❌ إخفاء التبويبات:<br/>- الدعوات<br/>- التكاليف"]
+    HideTabs --> ShowMemberTabs["✅ عرض فقط:<br/>- الأعضاء (قراءة)<br/>- القواعد (قراءة + اختيار)"]
+    ShowMemberTabs --> MemberTabSelect{التبويب؟}
+    
+    MemberTabSelect -->|الأعضاء| ViewMembers["👥 عرض الأعضاء<br/>(قراءة فقط)"]
+    ViewMembers --> ShowMembersList["عرض:<br/>الاسم، الدور، التاريخ"]
+    ShowMembersList --> MemberTabSelect
+    
+    MemberTabSelect -->|القواعد| ViewDBs["🗄️ عرض القواعد"]
+    ViewDBs --> ShowDBsList["عرض قائمة القواعد"]
+    ShowDBsList --> SelectOption["✅ إمكانية الاختيار"]
+    SelectOption --> MemberTabSelect
+    
+    %% ===== مالك المؤسسة =====
+    CheckRole -->|مالك المؤسسة| OwnerView["⚙️ عرض كامل"]
+    OwnerView --> ShowAllTabs["✅ جميع التبويبات:<br/>- الأعضاء<br/>- القواعد<br/>- الدعوات<br/>- التكاليف"]
+    ShowAllTabs --> OwnerTabSelect{التبويب المختار؟}
+    
+    %% ===== تبويب الأعضاء =====
+    OwnerTabSelect -->|الأعضاء| MembersTab["👥 تبويب الأعضاء"]
+    MembersTab --> GetMembers["GET /dashboard/members"]
+    GetMembers --> QueryMembersList["🔍 استعلام organization_members"]
+    QueryMembersList --> DisplayMembersTable["📋 عرض جدول الأعضاء"]
+    DisplayMembersTable --> MemberAction{الإجراء؟}
+    
+    MemberAction -->|إضافة عضو| AddMemberForm["➕ نموذج إضافة عضو"]
+    AddMemberForm --> EnterUserID["إدخال معرف المستخدم"]
+    EnterUserID --> GenMemberCreds["🔐 توليد بيانات الدخول"]
+    GenMemberCreds --> PostAddMember["POST /dashboard/members/add"]
+    PostAddMember --> SaveMember["💾 حفظ في:<br/>- dashboard_users<br/>- organization_members"]
+    SaveMember --> RefreshMembers["🔄 تحديث الجدول"]
+    RefreshMembers --> MembersTab
+    
+    MemberAction -->|حذف عضو| ConfirmRemove["⚠️ تأكيد الحذف"]
+    ConfirmRemove --> PostRemoveMember["POST /dashboard/members/remove"]
+    PostRemoveMember --> DisconnectDBs["فصل عن القواعد"]
+    DisconnectDBs --> DeleteMember["🗑️ حذف من:<br/>- organization_members<br/>- dashboard_users"]
+    DeleteMember --> RefreshMembers
+    
+    MemberAction -->|عرض فقط| MembersTab
+    
+    %% ===== تبويب القواعد =====
+    OwnerTabSelect -->|القواعد| DatabasesTab["🗄️ تبويب القواعد"]
+    DatabasesTab --> GetDBs["GET /dashboard/databases"]
+    GetDBs --> QueryDBsList["🔍 استعلام:<br/>- organization_databases<br/>- database_connections"]
+    QueryDBsList --> DisplayDBsTable["📋 عرض جدول القواعد"]
+    DisplayDBsTable --> DBAction{الإجراء؟}
+    
+    DBAction -->|إضافة قاعدة| AddDBForm["➕ نموذج إضافة قاعدة"]
+    AddDBForm --> EnterDBInfo["إدخال:<br/>- الاسم<br/>- Connection String<br/>- النوع"]
+    EnterDBInfo --> TestConnection["✅ اختبار الاتصال"]
+    TestConnection --> ConnValid{صحيح؟}
+    ConnValid -->|لا| ConnErr["❌ خطأ في الاتصال"]
+    ConnErr --> AddDBForm
+    ConnValid -->|نعم| PostAddDB["POST /dashboard/databases/create"]
+    PostAddDB --> SaveDBConn["💾 حفظ في:<br/>- database_connections<br/>- organization_databases"]
+    SaveDBConn --> NotifyAllMembers["📢 إشعار جميع الأعضاء"]
+    NotifyAllMembers --> RefreshDBs["🔄 تحديث الجدول"]
+    RefreshDBs --> DatabasesTab
+    
+    DBAction -->|حذف قاعدة| ConfirmDeleteDB["⚠️ تأكيد الحذف"]
+    ConfirmDeleteDB --> PostRemoveDB["POST /dashboard/databases/remove"]
+    PostRemoveDB --> ClearMemberCache["مسح من ذاكرة الأعضاء"]
+    ClearMemberCache --> DeleteDBConn["🗑️ حذف من:<br/>- organization_databases<br/>- database_connections"]
+    DeleteDBConn --> RefreshDBs
+    
+    DBAction -->|عرض فقط| DatabasesTab
+    
+    %% ===== تبويب الدعوات =====
+    OwnerTabSelect -->|الدعوات| InvitationsTab["🎫 تبويب الدعوات"]
+    InvitationsTab --> GetInvites["GET /dashboard/invitations"]
+    GetInvites --> QueryInvites2["🔍 استعلام invitations"]
+    QueryInvites2 --> DisplayInvitesTable["📋 عرض الدعوات:<br/>- النشطة<br/>- المنتهية"]
+    DisplayInvitesTable --> InviteAction{الإجراء؟}
+    
+    InviteAction -->|إنشاء دعوة| CreateInviteForm["➕ نموذج دعوة جديدة"]
+    CreateInviteForm --> SetInviteParams["تحديد:<br/>- عدد الاستخدامات<br/>- مدة الصلاحية"]
+    SetInviteParams --> GenInviteCode["توليد رمز فريد"]
+    GenInviteCode --> PostCreateInvite["POST /dashboard/invitations/create"]
+    PostCreateInvite --> SaveInvite2["💾 حفظ في invitations"]
+    SaveInvite2 --> DisplayInviteLink["📋 عرض رابط الدعوة"]
+    DisplayInviteLink --> CopyLink["📋 نسخ الرابط"]
+    CopyLink --> InvitationsTab
+    
+    InviteAction -->|عرض فقط| InvitationsTab
+    
+    %% ===== تبويب التكاليف =====
+    OwnerTabSelect -->|التكاليف| CostsTab["💰 تبويب التكاليف"]
+    CostsTab --> GetCosts["GET /dashboard/costs"]
+    GetCosts --> QueryCostsDB["🔍 استعلام قاعدة التكاليف"]
+    QueryCostsDB --> LoadCostData["تحميل البيانات من:<br/>- ModelUsage<br/>- StagesUsage<br/>- OrgModelUsage"]
+    
+    LoadCostData --> CostsSummary["📊 النظرة العامة"]
+    CostsSummary --> DisplaySummaryCards["عرض البطاقات:<br/>💰 إجمالي التكاليف<br/>📥 إجمالي المدخلات<br/>📤 إجمالي المخرجات<br/>💬 عدد المحادثات"]
+    
+    DisplaySummaryCards --> CostsByModel["🤖 التكاليف حسب النموذج"]
+    CostsByModel --> GetModelCosts["GET /dashboard/costs/by-model"]
+    GetModelCosts --> QueryModelUsage["🔍 استعلام ModelUsage"]
+    QueryModelUsage --> DisplayModelTable["📋 جدول النماذج:<br/>- اسم النموذج<br/>- عدد الاستخدامات<br/>- التوكنات<br/>- التكاليف"]
+    
+    DisplayModelTable --> CostsByStage["📈 التكاليف حسب المرحلة"]
+    CostsByStage --> GetStageCosts["GET /dashboard/costs/by-stage"]
+    GetStageCosts --> QueryStageUsage["🔍 استعلام StagesUsage"]
+    QueryStageUsage --> DisplayStageTable["📋 جدول المراحل:<br/>- Analysis<br/>- SQL Execution<br/>- Email Generation"]
+    
+    DisplayStageTable --> CostsDistribution["📊 توزيع التكاليف"]
+    CostsDistribution --> CalcIODistribution["حساب:<br/>- نسبة المدخلات<br/>- نسبة المخرجات"]
+    CalcIODistribution --> DisplayPieChart["🥧 رسم بياني دائري"]
+    DisplayPieChart --> DisplayDistTable["📋 جدول التوضيح"]
+    
+    DisplayDistTable --> CostsByUser["👥 التكاليف لكل مستخدم"]
+    CostsByUser --> GetUserCosts["GET /dashboard/costs/by-user"]
+    GetUserCosts --> QueryUserConvs["🔍 استعلام:<br/>- Conversations<br/>- ModelUsage"]
+    QueryUserConvs --> CalcUserStats["حساب:<br/>- متوسط التكلفة/عضو<br/>- إجمالي المؤسسة"]
+    CalcUserStats --> DisplayUserCards["📊 بطاقات الملخص"]
+    DisplayUserCards --> DisplayUserTable["📋 جدول المستخدمين:<br/>- معرف المستخدم<br/>- اسم المستخدم<br/>- عدد المحادثات<br/>- التوكنات<br/>- التكاليف"]
+    
+    DisplayUserTable --> CostActions["⚙️ إجراءات إضافية"]
+    CostActions --> CostActionSelect{الإجراء؟}
+    CostActionSelect -->|تحديث| RefreshCosts["🔄 تحديث البيانات"]
+    CostActionSelect -->|تصدير| ExportReport["📥 تصدير تقرير"]
+    CostActionSelect -->|تنزيل| DownloadData["💾 تحميل CSV"]
+    CostActionSelect -->|مسح| ClearFilters["🧹 مسح الفلاتر"]
+    RefreshCosts --> CostsTab
+    ExportReport --> CostsTab
+    DownloadData --> CostsTab
+    ClearFilters --> CostsTab
+    CostActionSelect -->|رجوع| OwnerTabSelect
+    
+    %% ===== الرجوع والخروج =====
+    MemberTabSelect -->|رجوع| CheckRole
+    OwnerTabSelect -->|رجوع| CheckRole
+    
+    CheckRole --> LogoutAction{تسجيل الخروج؟}
+    LogoutAction -->|نعم| ClickLogout["🔴 الضغط على الخروج"]
+    ClickLogout --> PostLogout["POST /dashboard/logout"]
+    PostLogout --> DeleteSession["🗑️ حذف الجلسة"]
+    DeleteSession --> ClearStorage["مسح localStorage"]
+    ClearStorage --> RedirectLogin["↪️ العودة لصفحة الدخول"]
+    RedirectLogin --> Login
+    
+    LogoutAction -->|لا| CheckRole
+    
+    style Start fill:#0088cc,stroke:#005fa3,color:#fff
+    style CreateSession fill:#27ae60,stroke:#1e8449,color:#fff
+    style DisplayCards fill:#f39c12,stroke:#d68910,color:#fff
+    style MemberView fill:#e74c3c,stroke:#c0392b,color:#fff
+    style OwnerView fill:#27ae60,stroke:#1e8449,color:#fff
+    style CostsTab fill:#3498db,stroke:#2980b9,color:#fff
+    style ClickLogout fill:#95a5a6,stroke:#7f8c8d,color:#fff
+```
+
 The Dashboard is a web-based management interface for organizations using the Telegram Bot system. It provides organization owners and members with tools to manage team members, database connections, invitations, and monitor LLM usage costs.
 
 **Key Capabilities:**
