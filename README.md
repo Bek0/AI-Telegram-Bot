@@ -1,6 +1,175 @@
 # Enterprise Telegram Bot + Dashboard System
 ## Complete System Overview
 
+
+```mermaid
+graph TD
+    Start["🚀 System Start"] --> BotCheck{Bot or<br/>Dashboard?}
+    
+    %% ===== BOT FLOW =====
+    BotCheck -->|Telegram| BotInit["Initialize Bot<br/>Load LLM Service"]
+    BotInit --> BotReady["Bot Ready for Commands"]
+    
+    BotReady --> UserMsg{User Message<br/>Type?}
+    
+    %% Command Routing
+    UserMsg -->|/start| StartCmd["Register User<br/>Create UserInfo"]
+    UserMsg -->|/createorg| OrgCmd["Check: Not in Org?"]
+    UserMsg -->|/adddb| AddDBCmd["Check: Has Perms?"]
+    UserMsg -->|/selectdb| SelectCmd["List DBs<br/>Set Active"]
+    UserMsg -->|/join| JoinCmd["Validate Invite<br/>Add Member"]
+    UserMsg -->|Text Question| QuestionFlow["QUESTION PROCESSING"]
+    
+    StartCmd --> RegDB["Store in<br/>telegram_users<br/>JSON"]
+    RegDB --> SendWelcome["Send Welcome<br/>Message"]
+    SendWelcome --> BotReady
+    
+    OrgCmd --> OrgYes{Valid?}
+    OrgYes -->|Yes| CreateOrg["Generate org_id"]
+    OrgYes -->|No| OrgError["❌ Already in Org"]
+    CreateOrg --> GenCreds["Generate<br/>Dashboard Creds"]
+    GenCreds --> StoreOrg["Store in<br/>organizations<br/>dashboard_users"]
+    StoreOrg --> SendCreds["Send Login Info<br/>to User"]
+    SendCreds --> BotReady
+    OrgError --> BotReady
+    
+    AddDBCmd --> PermCheck{Owner or<br/>Personal?}
+    PermCheck -->|Owner| CheckPerm["Verify org_owner"]
+    PermCheck -->|Personal| AllowDB["Allow if no org"]
+    CheckPerm --> ValidConn{Connection<br/>Valid?}
+    AllowDB --> ValidConn
+    ValidConn -->|Yes| SaveDB["Store in<br/>database_connections<br/>organization_databases"]
+    ValidConn -->|No| DBError["❌ Invalid Connection"]
+    SaveDB --> NotifyMembers["Notify All Members"]
+    NotifyMembers --> BotReady
+    DBError --> BotReady
+    
+    SelectCmd --> ListDBs["Query:<br/>User's DBs"]
+    ListDBs --> ShowDBs["Show /selectdb Menu"]
+    ShowDBs --> SetActive["Set current_database"]
+    SetActive --> BotReady
+    
+    JoinCmd --> ValidateInv{Invite<br/>Valid?}
+    ValidateInv -->|No| InvError["❌ Invalid/Expired"]
+    ValidateInv -->|Yes| AddMember["Add to<br/>organization_members"]
+    AddMember --> GenMemberCreds["Generate<br/>Member Creds"]
+    GenMemberCreds --> StoreInv["Update<br/>invitations<br/>current_uses++"]
+    StoreInv --> SendMemberInfo["Send Dashboard Info"]
+    SendMemberInfo --> BotReady
+    InvError --> BotReady
+    
+    %% Question Processing - Main Flow
+    QuestionFlow --> CheckDB{DB<br/>Selected?}
+    CheckDB -->|No| NeedDB["Ask to /selectdb"]
+    CheckDB -->|Yes| RateLimit["Check:<br/>Rate Limit<br/>1 req/sec"]
+    NeedDB --> BotReady
+    RateLimit --> ActiveReq["Check:<br/>Active Requests<br/>≤ 1"]
+    ActiveReq --> Stage1["STAGE 1: Analysis<br/>Gemini 2.5-Flash"]
+    
+    Stage1 --> LoadHist["Load Last 5<br/>Conversations"]
+    LoadHist --> Analyze["Analyze Question<br/>vs Schema"]
+    Analyze --> CountTokens1["Count Input Tokens"]
+    CountTokens1 --> Decide{Response<br/>Type?}
+    
+    Decide -->|SQL Query| Stage2["STAGE 2: SQL<br/>Execution"]
+    Decide -->|Direct Answer| UseAnswer["Use Summary<br/>Answer"]
+    Decide -->|Email| Stage3["STAGE 3: Email<br/>Generation"]
+    
+    Stage2 --> ExecuteSQL["Execute Query<br/>vs Database"]
+    ExecuteSQL --> FormatSQL["Gemini 2.0-Flash<br/>Format Results"]
+    FormatSQL --> CountTokens2["Count Tokens"]
+    CountTokens2 --> SaveStage2["Save Stage 2<br/>to ConversationStages"]
+    SaveStage2 --> Stage2Done["Stage 2 Complete"]
+    
+    Stage3 --> GenEmail["Gemini 2.5-Flash<br/>Generate Email"]
+    GenEmail --> CountTokens3["Count Tokens"]
+    CountTokens3 --> SaveStage3["Save Stage 3<br/>to ConversationStages"]
+    SaveStage3 --> Stage3Done["Stage 3 Complete"]
+    
+    Stage2Done --> SaveConv
+    Stage3Done --> SaveConv
+    UseAnswer --> SaveConv
+    
+    SaveConv["Save Conversation<br/>to JSON + SQL"] --> CalcCost["Calculate Total<br/>Cost All Stages"]
+    CalcCost --> UpdateUsage["Update:<br/>ModelUsage<br/>StagesUsage<br/>OrgModelUsage"]
+    UpdateUsage --> SendResponse["Send Response<br/>to User"]
+    SendResponse --> EmailOption{Email<br/>Available?}
+    EmailOption -->|Yes| ShowButtons["Show Email<br/>Preview Button"]
+    EmailOption -->|No| NormalMsg["Normal Message"]
+    ShowButtons --> BotReady
+    NormalMsg --> BotReady
+    
+    %% ===== DASHBOARD FLOW =====
+    BotCheck -->|Web Browser| DashStart["Open Dashboard<br/>Login Page"]
+    DashStart --> EnterCreds["Enter Username<br/>& Password"]
+    EnterCreds --> SubmitLogin["POST /dashboard/login"]
+    SubmitLogin --> QueryUser["Query dashboard_users<br/>Table"]
+    QueryUser --> ValidateHash["Verify Password<br/>Hash"]
+    ValidateHash --> LoginValid{Valid?}
+    LoginValid -->|No| LoginFail["❌ Invalid Credentials"]
+    LoginFail --> EnterCreds
+    LoginValid -->|Yes| CreateSession["Create Session<br/>Generate JWT Token"]
+    CreateSession --> StoreSession["Store in<br/>_sessions Dict<br/>24hr TTL"]
+    StoreSession --> Redirect["Redirect to<br/>/dashboard/"]
+    
+    Redirect --> LoadDash["Load Dashboard<br/>Overview"]
+    LoadDash --> GetOverview["GET /dashboard/overview"]
+    GetOverview --> QueryOrg["Query organizations<br/>table"]
+    QueryOrg --> QueryStats["Query members<br/>databases<br/>stats"]
+    QueryStats --> DisplayOverview["Display:<br/>Members Count<br/>Databases Count<br/>Created Date"]
+    DisplayOverview --> TabCheck{User<br/>Role?}
+    
+    TabCheck -->|Member| HideTabs["Hide:<br/>- Invitations<br/>- Costs"]
+    TabCheck -->|Owner| ShowAll["Show All Tabs"]
+    HideTabs --> ShowTabs["Display Tabs"]
+    ShowAll --> ShowTabs
+    
+    ShowTabs --> TabSelect{Tab<br/>Selected?}
+    
+    TabSelect -->|Members| MembersTab["GET /dashboard/members<br/>Query organization_members<br/>Display Table<br/>Owner: Show Add/Remove"]
+    TabSelect -->|Databases| DBTab["GET /dashboard/databases<br/>Query organization_databases<br/>Join database_connections<br/>Display Table<br/>Owner: Show Create/Remove"]
+    TabSelect -->|Invitations| InvTab["GET /dashboard/invitations<br/>Query invitations<br/>Show Active/Expired<br/>Owner: Create New"]
+    TabSelect -->|Costs| CostsTab["GET /dashboard/costs/*<br/>Query Costs DB<br/>Aggregate by:<br/>- Model<br/>- Stage<br/>- User<br/>Display Charts/Tables"]
+    
+    MembersTab --> MemberAction{Action?}
+    MemberAction -->|Add| PostAdd["POST /dashboard/members/add<br/>Create dashboard_user<br/>Add to organization_members"]
+    MemberAction -->|Remove| PostRem["POST /dashboard/members/remove<br/>Delete member<br/>Disconnect from DBs<br/>Delete dashboard_user"]
+    PostAdd --> UpdateUI["Refresh Members<br/>Table"]
+    PostRem --> UpdateUI
+    UpdateUI --> ShowTabs
+    
+    DBTab --> DBAction{Action?}
+    DBAction -->|Create| PostDB["POST /dashboard/databases/create<br/>Test connection<br/>Store in database_connections<br/>Link to organization_databases<br/>Notify Members"]
+    DBAction -->|Remove| DelDB["POST /dashboard/databases/remove<br/>Delete from organization_databases<br/>Delete from database_connections<br/>Clear from members' cache"]
+    PostDB --> RefreshDB["Refresh Databases<br/>Table"]
+    DelDB --> RefreshDB
+    RefreshDB --> ShowTabs
+    
+    InvTab --> InvAction{Action?}
+    InvAction -->|Create| PostInv["POST /dashboard/invitations/create<br/>Generate code<br/>Set expiry<br/>Store in invitations<br/>Display Link"]
+    InvAction -->|View| ListInv["Show current<br/>invitations"]
+    PostInv --> ShowInv["Display Result"]
+    ListInv --> ShowInv
+    ShowInv --> ShowTabs
+    
+    CostsTab --> CostEnd["Owner Views:<br/>- Total Costs<br/>- Per Model<br/>- Per Stage<br/>- Per User<br/>- Pie Chart"]
+    CostEnd --> ShowTabs
+    
+    ShowTabs --> LogoutBtn["Click Logout"]
+    LogoutBtn --> PostLogout["POST /dashboard/logout<br/>Delete Session"]
+    PostLogout --> ClearLocal["Clear localStorage"]
+    ClearLocal --> BackLogin["Redirect to /"]
+    BackLogin --> DashStart
+    
+    style Start fill:#0088cc,stroke:#005fa3,color:#fff
+    style BotCheck fill:#f39c12,stroke:#d68910,color:#fff
+    style QuestionFlow fill:#9b59b6,stroke:#7d3c98,color:#fff
+    style Stage1 fill:#e74c3c,stroke:#c0392b,color:#fff
+    style Stage2 fill:#e74c3c,stroke:#c0392b,color:#fff
+    style Stage3 fill:#e74c3c,stroke:#c0392b,color:#fff
+    style DashStart fill:#27ae60,stroke:#1e8449,color:#fff
+    style CostsTab fill:#3498db,stroke:#2980b9,color:#fff
+```
 ---
 
 ## 1. What Is This System?
