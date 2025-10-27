@@ -1,6 +1,230 @@
 # Telegram Bot: AI-Powered Database Query Interface
-## Complete Bot Implementation Guide
 
+## Bot Work Flows
+
+### To-show workflow
+```mermaid
+graph TD
+    A["👤 Telegram User"] --> B{نوع الرسالة}
+    
+    %% ===== أوامر عامة =====
+    B -->|/start| C["✅ تسجيل مستخدم جديد"]
+    C --> C1["إنشاء UserInfo"]
+    C1 --> C2["عرض رسالة ترحيب"]
+    
+    B -->|/help| D["📖 عرض الأوامر المتاحة"]
+    D --> D1{الدور}
+    D1 -->|عضو عادي| D2["أوامر محدودة"]
+    D1 -->|مالك مؤسسة| D3["جميع الأوامر"]
+    
+    B -->|/myinfo| E["👤 معلومات المستخدم"]
+    E --> E1["عرض: الدور، المؤسسة، قاعدة البيانات النشطة"]
+    
+    B -->|/clear| F["🗑️ حذف السجل"]
+    F --> F1["تأكيد من المستخدم"]
+    F1 --> F2["حذف من الذاكرة والملفات"]
+    
+    B -->|/history| G["📋 آخر 10 محادثات"]
+    G --> G1["عرض الأسئلة السابقة"]
+    
+    B -->|/stats| H["📊 إحصائيات المحادثة"]
+    H --> H1["عدد الأسئلة، SQL queries، التكاليف"]
+    
+    %% ===== أوامر المؤسسات =====
+    B -->|/org| I["🏢 قائمة المؤسسة"]
+    I --> I1{الدور}
+    I1 -->|ليس عضواً| I2["اقتراح: /createorg أو /join"]
+    I1 -->|عضو| I3["عرض معلومات المؤسسة<br/>خيارات محدودة"]
+    I1 -->|مالك| I4["عرض جميع الخيارات:<br/>✓ إضافة قاعدة<br/>✓ إنشاء دعوة<br/>✓ إدارة أعضاء"]
+    
+    B -->|/createorg| J["✨ إنشاء مؤسسة جديدة"]
+    J --> J1{تحقق: ليس في مؤسسة?}
+    J1 -->|نعم| J2["توليد org_id، بيانات دخول لوحة التحكم"]
+    J2 --> J3["تخزين في قاعدة البيانات"]
+    J3 --> J4["إرسال بيانات الدخول للمستخدم"]
+    J1 -->|لا| J5["❌ أنت بالفعل في مؤسسة"]
+    
+    B -->|/orginfo| K["📊 معلومات المؤسسة"]
+    K --> K1["عرض: الأعضاء، قواعد البيانات، التاريخ"]
+    
+    B -->|/adddb| L["➕ إضافة قاعدة بيانات"]
+    L --> L1{الدور}
+    L1 -->|مالك مؤسسة| L2["إضافة لجميع الأعضاء"]
+    L1 -->|عضو عادي| L3["إضافة شخصية فقط"]
+    L1 -->|بدون مؤسسة| L4["إضافة شخصية"]
+    L2 --> L5["التحقق من الاتصال"]
+    L3 --> L5
+    L4 --> L5
+    L5 --> L6["تخزين في قاعدة البيانات"]
+    
+    B -->|/selectdb| M["🗄️ اختيار قاعدة البيانات"]
+    M --> M1["عرض قائمة القواعس المتاحة"]
+    M1 --> M2["تعيين كقاعدة نشطة"]
+    
+    B -->|/invite| N["🎫 إنشاء رابط دعوة"]
+    N --> N1{تحقق: مالك مؤسسة?}
+    N1 -->|نعم| N2["توليد رمز + وقت انتهاء"]
+    N2 --> N3["تحديد عدد الاستخدامات"]
+    N3 --> N4["إرسال الرابط"]
+    N1 -->|لا| N5["❌ صلاحية محصورة على المالك"]
+    
+    B -->|/join| O["👥 الانضمام لمؤسسة"]
+    O --> O1{تحقق: الرابط صحيح?}
+    O1 -->|نعم| O2["توليد بيانات دخول لوحة التحكم"]
+    O2 --> O3["إضافة كعضو في المؤسسة"]
+    O3 --> O4["إشعار المالك"]
+    O1 -->|لا| O5["❌ رابط غير صحيح أو منتهي الصلاحية"]
+    
+    %% ===== الأسئلة والمعالجة =====
+    B -->|رسالة نصية| P{"تحقق من القيود"}
+    P -->|لا قاعدة| P1["⚠️ اختر قاعدة بيانات أولاً"]
+    P -->|Rate limit| P2["⏳ انتظر قبل السؤال التالي"]
+    P -->|نشط جداً| P3["📢 طلبات كثيرة معلقة"]
+    
+    P -->|يمر| Q["🤖 معالجة السؤال"]
+    Q --> Q1["المرحلة 1: تحليل السؤال<br/>Gemini 2.5-Flash"]
+    Q1 --> Q2{النوع}
+    
+    Q2 -->|استعلام SQL| R["المرحلة 2: تنفيذ SQL<br/>Gemini 2.0-Flash"]
+    Q2 -->|إجابة مباشرة| S["إرسال الإجابة"]
+    Q2 -->|إيميل| T["المرحلة 3: توليد إيميل<br/>Gemini 2.5-Flash"]
+    
+    R --> R1["حساب التوكنات"]
+    R1 --> R2["حساب التكاليف"]
+    R2 --> S
+    
+    T --> T1["حساب التوكنات"]
+    T1 --> T2["حساب التكاليف"]
+    T2 --> U["عرض زر معاينة الإيميل"]
+    U --> U1{اختيار المستخدم}
+    U1 -->|معاينة| U2["عرض الإيميل"]
+    U1 -->|إرسال| U3["إرسال عبر SMTP"]
+    U1 -->|إلغاء| U4["إلغاء العملية"]
+    
+    S --> V["💾 حفظ في قاعدة البيانات"]
+    V --> V1["جدول Conversations"]
+    V2["جدول ConversationStages"]
+    V3["تحديث ModelUsage"]
+    V1 --> V2 --> V3
+    V3 --> W["📱 إرسال الرد للمستخدم"]
+    
+    style C fill:#0088cc,stroke:#005fa3,color:#fff
+    style J fill:#27ae60,stroke:#1e8449,color:#fff
+    style N fill:#f39c12,stroke:#d68910,color:#fff
+    style O fill:#9b59b6,stroke:#7d3c98,color:#fff
+    style Q fill:#e74c3c,stroke:#c0392b,color:#fff
+```
+
+### For dev workflow 
+```mermaid
+graph TD
+    A["User Sends Message"] --> B["Bot Receives Update"]
+    B --> C{Message Type?}
+    
+    C -->|/start| D["Register/Update User"]
+    C -->|Command| E["Route to Command Handler"]
+    C -->|Text Message| F["Question Handler"]
+    
+    D --> D1["Create UserInfo<br/>Store in JSON"]
+    D1 --> D2["Send Welcome Message"]
+    D2 --> END1["End"]
+    
+    E --> E1{Which Command?}
+    E1 -->|/createorg| E2["Validate User<br/>Not in Org"]
+    E1 -->|/adddb| E3["Check Permissions<br/>Add Connection"]
+    E1 -->|/selectdb| E4["List Available DBs<br/>Set Active"]
+    E1 -->|/invite| E5["Generate Invite<br/>Code + Creds"]
+    E1 -->|/join| E6["Validate Invite<br/>Add Member"]
+    E1 -->|/clear| E7["Confirm Dialog"]
+    E1 -->|/org, /myinfo| E8["Display Info/Menu"]
+    
+    E2 --> E2A["Create Org ID"]
+    E2A --> E2B["Generate Dashboard Creds"]
+    E2B --> E2C["Create org_owner Role"]
+    E2C --> E2D["Send Credentials"]
+    E2D --> END2["End"]
+    
+    E3 --> E3A["Check org_owner"]
+    E3A --> E3B["Validate Connection"]
+    E3B --> E3C["Store Connection"]
+    E3C --> E3D["Notify Members"]
+    E3D --> END3["End"]
+    
+    E7 --> E7A{User Confirms?}
+    E7A -->|Yes| E7B["Delete Memory"]
+    E7A -->|No| E7C["Cancel"]
+    E7B --> E7D["Clear JSON Files"]
+    E7D --> END4["End"]
+    
+    F --> F1["Check Rate Limit<br/>1 req/sec, burst 3"]
+    F1 --> F2{Rate Limited?}
+    F2 -->|Yes| F2A["Send Wait Message"]
+    F2A --> END5["End"]
+    F2 -->|No| F3["Check Active<br/>Requests ≤ 1"]
+    F3 --> F3A{Max Reached?}
+    F3A -->|Yes| F3B["Send Queue Message"]
+    F3B --> END6["End"]
+    F3A -->|No| F4["Get Database"]
+    
+    F4 --> F5{DB Selected?}
+    F5 -->|No| F5A["Request DB Selection"]
+    F5A --> END7["End"]
+    F5 -->|Yes| F6["Stage 1: Analysis"]
+    
+    F6 --> F6A["Load Conversation<br/>History Last 5"]
+    F6A --> F6B["Call Gemini 2.5-Flash<br/>Analyze Question"]
+    F6B --> F6C["Generate Summary<br/>SQL Query Check"]
+    F6C --> F6D["Count Tokens<br/>Calculate Cost"]
+    F6D --> F7{What Method?}
+    
+    F7 -->|SQL Query| F8["Stage 2: Execute SQL"]
+    F7 -->|Direct Answer| F9["Use Summary Answer"]
+    F7 -->|Email| F10["Stage 3: Generate Email"]
+    
+    F8 --> F8A["Execute Query<br/>Against DB"]
+    F8A --> F8B["Call Gemini 2.0-Flash<br/>Process Results"]
+    F8B --> F8C["Generate Natural<br/>Language Response"]
+    F8C --> F8D["Count Tokens<br/>Calculate Cost"]
+    F8D --> F11["Save to Database"]
+    
+    F10 --> F10A["Extract Recipients<br/>from Context"]
+    F10A --> F10B["Call Gemini 2.5-Flash<br/>Generate Email"]
+    F10B --> F10C["Create Mail Object"]
+    F10C --> F10D["Count Tokens"]
+    F10D --> F11
+    
+    F9 --> F11["Save Conversation<br/>Update Memory"]
+    F11 --> F11A["Save to JSON<br/>Background Queue"]
+    F11A --> F11B["Store in SQL<br/>Conversation ID"]
+    F11B --> F11C["Save Stage Data<br/>Tokens + Costs"]
+    F11C --> F11D["Update Model Usage<br/>Aggregates"]
+    F11D --> F12["Send Response<br/>with Buttons"]
+    F12 --> F13{Has Email?}
+    F13 -->|Yes| F13A["Add Email Preview<br/>Send Button"]
+    F13 -->|No| F13B["Regular Response"]
+    F13A --> F14["User Receives<br/>Message"]
+    F13B --> F14
+    F14 --> END8["End"]
+    
+    F14 --> F15{User Clicks<br/>Email Button?}
+    F15 -->|Preview| F16["Show Email<br/>Confirmation"]
+    F16 --> F17{Confirm Send?}
+    F17 -->|Yes| F18["Call EmailService<br/>Send SMTP"]
+    F17 -->|No| F19["Cancel"]
+    F18 --> F20["Log Action"]
+    F20 --> END9["End"]
+    F19 --> END10["End"]
+    F15 -->|No| END11["End"]
+    
+    style A fill:#e1f5ff
+    style F6 fill:#fff3e0
+    style F8 fill:#f3e5f5
+    style F10 fill:#e8f5e9
+    style F11 fill:#fce4ec
+    style F18 fill:#e0f2f1
+```
+
+### Full workflow
 ```mermaid
 graph TD
     Start["🚀 بدء البوت"] --> Init["تهيئة النظام<br/>تحميل LLM Services"]
@@ -198,6 +422,7 @@ graph TD
     style SendResponse fill:#3498db,stroke:#2980b9,color:#fff
 ```
 
+## Complete Bot Implementation Guide
 ---
 
 ## 1. Bot Overview
