@@ -1,6 +1,87 @@
 # Enterprise Telegram Bot + Dashboard System
-## Professional README & Complete System Documentation
 
+## System workflows
+
+### small workflow
+```mermaid
+graph TD
+    Start["🚀 نظام البيانات الذكي"] --> User["👤 المستخدم"]
+    
+    User --> Choice{الواجهة المختارة؟}
+    
+    %% ===== BOT FLOW =====
+    Choice -->|Telegram| TG["📱 البوت"]
+    TG --> TG1{نوع الرسالة؟}
+    
+    TG1 -->|أوامر| CMD["إدارة المؤسسات<br/>والقواعد والدعوات"]
+    TG1 -->|أسئلة| QUEST["🤖 معالجة ذكية"]
+    
+    QUEST --> LLM["3 مراحل LLM"]
+    LLM --> L1["1️⃣ تحليل السؤال"]
+    LLM --> L2["2️⃣ تنفيذ SQL"]
+    LLM --> L3["3️⃣ توليد إيميل"]
+    
+    L1 --> DB1["تحديد نوع الإجابة"]
+    L2 --> DB2["استعلام القاعدة"]
+    L3 --> DB3["إنشاء بريد احترافي"]
+    
+    DB1 --> SAVE1["💾 حفظ وحساب التكاليف"]
+    DB2 --> SAVE1
+    DB3 --> SAVE1
+    
+    %% ===== DASHBOARD FLOW =====
+    Choice -->|Web| DASH["🌐 لوحة التحكم"]
+    DASH --> AUTH["🔐 تسجيل الدخول"]
+    AUTH --> ROLE{الدور؟}
+    
+    ROLE -->|عضو| MEM["عرض معلومات محدودة"]
+    ROLE -->|مالك| ADMIN["إدارة كاملة"]
+    
+    ADMIN --> TAB1["👥 إدارة الأعضاء"]
+    ADMIN --> TAB2["🗄️ إدارة القواعد"]
+    ADMIN --> TAB3["🎫 الدعوات"]
+    ADMIN --> TAB4["💰 تحليل التكاليف"]
+    
+    MEM --> READ1["استعراض الأعضاء"]
+    MEM --> READ2["اختيار قاعدة"]
+    
+    %% ===== SHARED BACKEND =====
+    SAVE1 --> BACKEND["🔧 الخدمات المشتركة"]
+    TAB1 --> BACKEND
+    TAB2 --> BACKEND
+    TAB3 --> BACKEND
+    TAB4 --> BACKEND
+    READ1 --> BACKEND
+    READ2 --> BACKEND
+    CMD --> BACKEND
+    
+    BACKEND --> BE1["Authentication"]
+    BACKEND --> BE2["Database Connections"]
+    BACKEND --> BE3["Cost Tracking"]
+    BACKEND --> BE4["Audit Logging"]
+    
+    %% ===== DATABASES =====
+    BE1 --> DB["💾 Databases"]
+    BE2 --> DB
+    BE3 --> DB
+    BE4 --> DB
+    
+    DB --> MGRDB["Manager DB<br/>Users & Orgs"]
+    DB --> COSTDB["Costs DB<br/>Analytics"]
+    DB --> CUSTOMERDB["Customer DBs<br/>Data Queries"]
+    
+    MGRDB --> END["✅ السيستم متكامل"]
+    COSTDB --> END
+    CUSTOMERDB --> END
+    
+    style Start fill:#0088cc,stroke:#005fa3,color:#fff
+    style LLM fill:#e74c3c,stroke:#c0392b,color:#fff
+    style ADMIN fill:#27ae60,stroke:#1e8449,color:#fff
+    style BACKEND fill:#f39c12,stroke:#d68910,color:#fff
+    style DB fill:#3498db,stroke:#2980b9,color:#fff
+```
+
+### Full workflow
 ```mermaid
 graph TD
     Start["🚀 System Start"] --> BotCheck{Bot or<br/>Dashboard?}
@@ -168,9 +249,9 @@ graph TD
     style Stage3 fill:#e74c3c,stroke:#c0392b,color:#fff
     style DashStart fill:#27ae60,stroke:#1e8449,color:#fff
     style CostsTab fill:#3498db,stroke:#2980b9,color:#fff
-
 ```
 
+## Professional README & Complete System Documentation
 ---
 
 ## 1. Executive Overview
