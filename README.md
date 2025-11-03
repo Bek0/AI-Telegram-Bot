@@ -4,252 +4,65 @@
 ### small workflow
 ```mermaid
 graph TD
-    Start["🚀 نظام البيانات الذكي"] --> User["👤 المستخدم"]
+    Start["🚀 Smart Data System"] --> Choose{Choose Your Way}
     
-    User --> Choice{الواجهة المختارة؟}
+    %% ===== TELEGRAM BOT =====
+    Choose -->|"📱 Chat Bot"| Bot["Open Telegram Bot"]
+    Bot --> Setup["First Time?<br/>Register in 1 click"]
+    Setup --> Team{Join or Create?}
     
-    %% ===== BOT FLOW =====
-    Choice -->|Telegram| TG["📱 البوت"]
-    TG --> TG1{نوع الرسالة؟}
+    Team -->|Create| Owner["👑 Create Your Team<br/>Get login info"]
+    Team -->|Join| Member["👤 Join with invite code<br/>Get login info"]
+    Team -->|Solo| Solo["🚶 Work alone"]
     
-    TG1 -->|أوامر| CMD["إدارة المؤسسات<br/>والقواعد والدعوات"]
-    TG1 -->|أسئلة| QUEST["🤖 معالجة ذكية"]
+    Owner --> AddDB["Connect your database"]
+    Member --> PickDB["Choose database"]
+    Solo --> AddDB
+    AddDB --> Ready["✅ Ready!"]
+    PickDB --> Ready
     
-    QUEST --> LLM["3 مراحل LLM"]
-    LLM --> L1["1️⃣ تحليل السؤال"]
-    LLM --> L2["2️⃣ تنفيذ SQL"]
-    LLM --> L3["3️⃣ توليد إيميل"]
+    Ready --> Ask["💬 Ask any question<br/>in normal language"]
+    Ask --> Example["'Show customers from January'<br/>'How many sales today?'"]
+    Example --> Magic["🤖 AI finds the answer"]
+    Magic --> Answer["📨 Get instant reply"]
     
-    L1 --> DB1["تحديد نوع الإجابة"]
-    L2 --> DB2["استعلام القاعدة"]
-    L3 --> DB3["إنشاء بريد احترافي"]
+    Answer --> Again{Ask more?}
+    Again -->|Yes| Ask
+    Again -->|No| Done1["✅ Done"]
     
-    DB1 --> SAVE1["💾 حفظ وحساب التكاليف"]
-    DB2 --> SAVE1
-    DB3 --> SAVE1
+    %% ===== WEB DASHBOARD =====
+    Choose -->|"🌐 Dashboard"| Web["Open website"]
+    Web --> Login["Login with info<br/>from Telegram"]
+    Login --> Home["🏠 See your team overview"]
     
-    %% ===== DASHBOARD FLOW =====
-    Choice -->|Web| DASH["🌐 لوحة التحكم"]
-    DASH --> AUTH["🔐 تسجيل الدخول"]
-    AUTH --> ROLE{الدور؟}
+    Home --> Role{Your role?}
     
-    ROLE -->|عضو| MEM["عرض معلومات محدودة"]
-    ROLE -->|مالك| ADMIN["إدارة كاملة"]
+    Role -->|Member| CanView["You can:<br/>✓ View team<br/>✓ See databases"]
+    Role -->|Owner| CanManage["You can:<br/>✓ Add/remove members<br/>✓ Add/remove databases<br/>✓ Create invites<br/>✓ See costs"]
     
-    ADMIN --> TAB1["👥 إدارة الأعضاء"]
-    ADMIN --> TAB2["🗄️ إدارة القواعد"]
-    ADMIN --> TAB3["🎫 الدعوات"]
-    ADMIN --> TAB4["💰 تحليل التكاليف"]
+    CanView --> Done2["✅ Done"]
+    CanManage --> Done2
     
-    MEM --> READ1["استعراض الأعضاء"]
-    MEM --> READ2["اختيار قاعدة"]
+    %% ===== BENEFITS =====
+    Done1 --> Why["✨ Why use this?"]
+    Done2 --> Why
     
-    %% ===== SHARED BACKEND =====
-    SAVE1 --> BACKEND["🔧 الخدمات المشتركة"]
-    TAB1 --> BACKEND
-    TAB2 --> BACKEND
-    TAB3 --> BACKEND
-    TAB4 --> BACKEND
-    READ1 --> BACKEND
-    READ2 --> BACKEND
-    CMD --> BACKEND
+    Why --> B1["🔒 Secure - Your data is safe"]
+    Why --> B2["💡 Smart - No coding needed"]
+    Why --> B3["🤝 Team - Work together"]
+    Why --> B4["💰 Clear - Track all costs"]
     
-    BACKEND --> BE1["Authentication"]
-    BACKEND --> BE2["Database Connections"]
-    BACKEND --> BE3["Cost Tracking"]
-    BACKEND --> BE4["Audit Logging"]
+    B1 --> End["✅ Complete System"]
+    B2 --> End
+    B3 --> End
+    B4 --> End
     
-    %% ===== DATABASES =====
-    BE1 --> DB["💾 Databases"]
-    BE2 --> DB
-    BE3 --> DB
-    BE4 --> DB
-    
-    DB --> MGRDB["Manager DB<br/>Users & Orgs"]
-    DB --> COSTDB["Costs DB<br/>Analytics"]
-    DB --> CUSTOMERDB["Customer DBs<br/>Data Queries"]
-    
-    MGRDB --> END["✅ السيستم متكامل"]
-    COSTDB --> END
-    CUSTOMERDB --> END
-    
-    style Start fill:#0088cc,stroke:#005fa3,color:#fff
-    style LLM fill:#e74c3c,stroke:#c0392b,color:#fff
-    style ADMIN fill:#27ae60,stroke:#1e8449,color:#fff
-    style BACKEND fill:#f39c12,stroke:#d68910,color:#fff
-    style DB fill:#3498db,stroke:#2980b9,color:#fff
+    style Start fill:#0088cc,stroke:#005fa3,color:#fff,stroke-width:4px
+    style Ask fill:#e74c3c,stroke:#c0392b,color:#fff,stroke-width:3px
+    style Magic fill:#9b59b6,stroke:#7d3c98,color:#fff,stroke-width:3px
+    style Why fill:#f39c12,stroke:#d68910,color:#fff,stroke-width:3px
+    style End fill:#2ecc71,stroke:#27ae60,color:#fff,stroke-width:4px
 ```
-
-### Full workflow
-```mermaid
-graph TD
-    Start["🚀 System Start"] --> BotCheck{Bot or<br/>Dashboard?}
-    
-    %% ===== BOT FLOW =====
-    BotCheck -->|Telegram| BotInit["Initialize Bot<br/>Load LLM Service"]
-    BotInit --> BotReady["Bot Ready for Commands"]
-    
-    BotReady --> UserMsg{User Message<br/>Type?}
-    
-    %% Command Routing
-    UserMsg -->|/start| StartCmd["Register User<br/>Create UserInfo"]
-    UserMsg -->|/createorg| OrgCmd["Check: Not in Org?"]
-    UserMsg -->|/adddb| AddDBCmd["Check: Has Perms?"]
-    UserMsg -->|/selectdb| SelectCmd["List DBs<br/>Set Active"]
-    UserMsg -->|/join| JoinCmd["Validate Invite<br/>Add Member"]
-    UserMsg -->|Text Question| QuestionFlow["QUESTION PROCESSING"]
-    
-    StartCmd --> RegDB["Store in<br/>telegram_users<br/>JSON"]
-    RegDB --> SendWelcome["Send Welcome<br/>Message"]
-    SendWelcome --> BotReady
-    
-    OrgCmd --> OrgYes{Valid?}
-    OrgYes -->|Yes| CreateOrg["Generate org_id"]
-    OrgYes -->|No| OrgError["❌ Already in Org"]
-    CreateOrg --> GenCreds["Generate<br/>Dashboard Creds"]
-    GenCreds --> StoreOrg["Store in<br/>organizations<br/>dashboard_users"]
-    StoreOrg --> SendCreds["Send Login Info<br/>to User"]
-    SendCreds --> BotReady
-    OrgError --> BotReady
-    
-    AddDBCmd --> PermCheck{Owner or<br/>Personal?}
-    PermCheck -->|Owner| CheckPerm["Verify org_owner"]
-    PermCheck -->|Personal| AllowDB["Allow if no org"]
-    CheckPerm --> ValidConn{Connection<br/>Valid?}
-    AllowDB --> ValidConn
-    ValidConn -->|Yes| SaveDB["Store in<br/>database_connections<br/>organization_databases"]
-    ValidConn -->|No| DBError["❌ Invalid Connection"]
-    SaveDB --> NotifyMembers["Notify All Members"]
-    NotifyMembers --> BotReady
-    DBError --> BotReady
-    
-    SelectCmd --> ListDBs["Query:<br/>User's DBs"]
-    ListDBs --> ShowDBs["Show /selectdb Menu"]
-    ShowDBs --> SetActive["Set current_database"]
-    SetActive --> BotReady
-    
-    JoinCmd --> ValidateInv{Invite<br/>Valid?}
-    ValidateInv -->|No| InvError["❌ Invalid/Expired"]
-    ValidateInv -->|Yes| AddMember["Add to<br/>organization_members"]
-    AddMember --> GenMemberCreds["Generate<br/>Member Creds"]
-    GenMemberCreds --> StoreInv["Update<br/>invitations<br/>current_uses++"]
-    StoreInv --> SendMemberInfo["Send Dashboard Info"]
-    SendMemberInfo --> BotReady
-    InvError --> BotReady
-    
-    %% Question Processing - Main Flow
-    QuestionFlow --> CheckDB{DB<br/>Selected?}
-    CheckDB -->|No| NeedDB["Ask to /selectdb"]
-    CheckDB -->|Yes| RateLimit["Check:<br/>Rate Limit<br/>1 req/sec"]
-    NeedDB --> BotReady
-    RateLimit --> ActiveReq["Check:<br/>Active Requests<br/>≤ 1"]
-    ActiveReq --> Stage1["STAGE 1: Analysis<br/>Gemini 2.5-Flash"]
-    
-    Stage1 --> LoadHist["Load Last 5<br/>Conversations"]
-    LoadHist --> Analyze["Analyze Question<br/>vs Schema"]
-    Analyze --> CountTokens1["Count Input Tokens"]
-    CountTokens1 --> Decide{Response<br/>Type?}
-    
-    Decide -->|SQL Query| Stage2["STAGE 2: SQL<br/>Execution"]
-    Decide -->|Direct Answer| UseAnswer["Use Summary<br/>Answer"]
-    Decide -->|Email| Stage3["STAGE 3: Email<br/>Generation"]
-    
-    Stage2 --> ExecuteSQL["Execute Query<br/>vs Database"]
-    ExecuteSQL --> FormatSQL["Gemini 2.0-Flash<br/>Format Results"]
-    FormatSQL --> CountTokens2["Count Tokens"]
-    CountTokens2 --> SaveStage2["Save Stage 2<br/>to ConversationStages"]
-    SaveStage2 --> Stage2Done["Stage 2 Complete"]
-    
-    Stage3 --> GenEmail["Gemini 2.5-Flash<br/>Generate Email"]
-    GenEmail --> CountTokens3["Count Tokens"]
-    CountTokens3 --> SaveStage3["Save Stage 3<br/>to ConversationStages"]
-    SaveStage3 --> Stage3Done["Stage 3 Complete"]
-    
-    Stage2Done --> SaveConv
-    Stage3Done --> SaveConv
-    UseAnswer --> SaveConv
-    
-    SaveConv["Save Conversation<br/>to JSON + SQL"] --> CalcCost["Calculate Total<br/>Cost All Stages"]
-    CalcCost --> UpdateUsage["Update:<br/>ModelUsage<br/>StagesUsage<br/>OrgModelUsage"]
-    UpdateUsage --> SendResponse["Send Response<br/>to User"]
-    SendResponse --> EmailOption{Email<br/>Available?}
-    EmailOption -->|Yes| ShowButtons["Show Email<br/>Preview Button"]
-    EmailOption -->|No| NormalMsg["Normal Message"]
-    ShowButtons --> BotReady
-    NormalMsg --> BotReady
-    
-    %% ===== DASHBOARD FLOW =====
-    BotCheck -->|Web Browser| DashStart["Open Dashboard<br/>Login Page"]
-    DashStart --> EnterCreds["Enter Username<br/>& Password"]
-    EnterCreds --> SubmitLogin["POST /dashboard/login"]
-    SubmitLogin --> QueryUser["Query dashboard_users<br/>Table"]
-    QueryUser --> ValidateHash["Verify Password<br/>Hash"]
-    ValidateHash --> LoginValid{Valid?}
-    LoginValid -->|No| LoginFail["❌ Invalid Credentials"]
-    LoginFail --> EnterCreds
-    LoginValid -->|Yes| CreateSession["Create Session<br/>Generate JWT Token"]
-    CreateSession --> StoreSession["Store in<br/>_sessions Dict<br/>24hr TTL"]
-    StoreSession --> Redirect["Redirect to<br/>/dashboard/"]
-    
-    Redirect --> LoadDash["Load Dashboard<br/>Overview"]
-    LoadDash --> GetOverview["GET /dashboard/overview"]
-    GetOverview --> QueryOrg["Query organizations<br/>table"]
-    QueryOrg --> QueryStats["Query members<br/>databases<br/>stats"]
-    QueryStats --> DisplayOverview["Display:<br/>Members Count<br/>Databases Count<br/>Created Date"]
-    DisplayOverview --> TabCheck{User<br/>Role?}
-    
-    TabCheck -->|Member| HideTabs["Hide:<br/>- Invitations<br/>- Costs"]
-    TabCheck -->|Owner| ShowAll["Show All Tabs"]
-    HideTabs --> ShowTabs["Display Tabs"]
-    ShowAll --> ShowTabs
-    
-    ShowTabs --> TabSelect{Tab<br/>Selected?}
-    
-    TabSelect -->|Members| MembersTab["GET /dashboard/members<br/>Query organization_members<br/>Display Table<br/>Owner: Show Add/Remove"]
-    TabSelect -->|Databases| DBTab["GET /dashboard/databases<br/>Query organization_databases<br/>Join database_connections<br/>Display Table<br/>Owner: Show Create/Remove"]
-    TabSelect -->|Invitations| InvTab["GET /dashboard/invitations<br/>Query invitations<br/>Show Active/Expired<br/>Owner: Create New"]
-    TabSelect -->|Costs| CostsTab["GET /dashboard/costs/*<br/>Query Costs DB<br/>Aggregate by:<br/>- Model<br/>- Stage<br/>- User<br/>Display Charts/Tables"]
-    
-    MembersTab --> MemberAction{Action?}
-    MemberAction -->|Add| PostAdd["POST /dashboard/members/add<br/>Create dashboard_user<br/>Add to organization_members"]
-    MemberAction -->|Remove| PostRem["POST /dashboard/members/remove<br/>Delete member<br/>Disconnect from DBs<br/>Delete dashboard_user"]
-    PostAdd --> UpdateUI["Refresh Members<br/>Table"]
-    PostRem --> UpdateUI
-    UpdateUI --> ShowTabs
-    
-    DBTab --> DBAction{Action?}
-    DBAction -->|Create| PostDB["POST /dashboard/databases/create<br/>Test connection<br/>Store in database_connections<br/>Link to organization_databases<br/>Notify Members"]
-    DBAction -->|Remove| DelDB["POST /dashboard/databases/remove<br/>Delete from organization_databases<br/>Delete from database_connections<br/>Clear from members' cache"]
-    PostDB --> RefreshDB["Refresh Databases<br/>Table"]
-    DelDB --> RefreshDB
-    RefreshDB --> ShowTabs
-    
-    InvTab --> InvAction{Action?}
-    InvAction -->|Create| PostInv["POST /dashboard/invitations/create<br/>Generate code<br/>Set expiry<br/>Store in invitations<br/>Display Link"]
-    InvAction -->|View| ListInv["Show current<br/>invitations"]
-    PostInv --> ShowInv["Display Result"]
-    ListInv --> ShowInv
-    ShowInv --> ShowTabs
-    
-    CostsTab --> CostEnd["Owner Views:<br/>- Total Costs<br/>- Per Model<br/>- Per Stage<br/>- Per User<br/>- Pie Chart"]
-    CostEnd --> ShowTabs
-    
-    ShowTabs --> LogoutBtn["Click Logout"]
-    LogoutBtn --> PostLogout["POST /dashboard/logout<br/>Delete Session"]
-    PostLogout --> ClearLocal["Clear localStorage"]
-    ClearLocal --> BackLogin["Redirect to /"]
-    BackLogin --> DashStart
-    
-    style Start fill:#0088cc,stroke:#005fa3,color:#fff
-    style BotCheck fill:#f39c12,stroke:#d68910,color:#fff
-    style QuestionFlow fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style Stage1 fill:#e74c3c,stroke:#c0392b,color:#fff
-    style Stage2 fill:#e74c3c,stroke:#c0392b,color:#fff
-    style Stage3 fill:#e74c3c,stroke:#c0392b,color:#fff
-    style DashStart fill:#27ae60,stroke:#1e8449,color:#fff
-    style CostsTab fill:#3498db,stroke:#2980b9,color:#fff
-```
-
 ## Complete System Overview
 ---
 
@@ -724,49 +537,6 @@ Q2 begins processing
 - Maintains conversation coherence
 - Preserves audit trail
 - Auto-cleanup prevents memory leaks
-
----
-
-## 14. Project Structure
-
-```
-project-root/
-├── main_telegram.py              # Bot initialization
-├── main.py                       # Dashboard FastAPI init
-│
-├── services/                     # Shared business logic
-│   ├── telegram_service.py       # Command handlers
-│   ├── telegram_llm_service.py   # LLM orchestration
-│   ├── telegram_auth.py          # Auth (Bot)
-│   ├── telegram_logging.py       # Logging
-│   ├── database_manager.py       # DB connections
-│   ├── organization_manager.py   # Org management
-│   ├── send_email.py             # Email service
-│   ├── sql_service.py            # SQL execution
-│   └── token_cost_calculator.py  # Cost tracking
-│
-├── dashboard/
-│   ├── main.py                   # FastAPI app
-│   ├── routes.py                 # API endpoints
-│   ├── auth.py                   # Session management
-│   ├── utils.py                  # Helpers
-│   ├── templates/                # HTML pages
-│   └── static/                   # CSS/JS
-│
-├── models/
-│   └── pydantic_models.py        # Data validation
-│
-├── memory/
-│   └── telegram_conversation.py  # Caching logic
-│
-├── utils/
-│   └── prompts.py                # LLM templates
-│
-└── logs/
-    ├── bot.log
-    ├── telegram_activity.log
-    └── conversations/
-```
 
 ---
 
