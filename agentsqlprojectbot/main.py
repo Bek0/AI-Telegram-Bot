@@ -1,38 +1,48 @@
-# /main.py
+# main.py - تعديلات
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-
-# استيراد الـ dashboard routes
+from contextlib import asynccontextmanager
 from dashboard.routes import router as dashboard_router
+from dashboard.cleanup_scheduler import start_scheduler, stop_scheduler
+import logging
 
-app = FastAPI(title="Organization Dashboard")
+logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """دورة حياة التطبيق"""
+    # عند البدء
+    logger.info("🚀 بدء التطبيق...")
+    start_scheduler()
+    yield
+    # عند الإيقاف
+    logger.info("🛑 إيقاف التطبيق...")
+    stop_scheduler()
+
+app = FastAPI(title="Organization Dashboard", lifespan=lifespan)
 
 # ربط المسارات
 app.include_router(dashboard_router)
 
-# إعداد المسارات الثابتة (CSS, JS, images)
+# إعداد المسارات الثابتة
 app.mount("/static", StaticFiles(directory="dashboard/static"), name="static")
-
-# ربط صفحات الـ dashboard
 
 @app.get("/")
 async def root():
-    """الصفحة الرئيسية - تعيد صفحة الدخول"""
+    """الصفحة الرئيسية"""
     return FileResponse("dashboard/templates/login.html", media_type="text/html")
-
 
 @app.get("/dashboard/")
 async def dashboard():
-    """صفحة الداش بورد الرئيسية"""
+    """صفحة الداش بورد"""
     return FileResponse("dashboard/templates/dashboard.html", media_type="text/html")
-
 
 @app.get("/costs/")
 async def costs():
-    """صفحة الداش بورد الرئيسية"""
-    return FileResponse("dashboard/templates/costs.html", media_type="text/html")
+    """صفحة التكاليف"""
+    return FileResponse("dashboard/templates/dashboard.html", media_type="text/html")
 
 if __name__ == "__main__":
     import uvicorn

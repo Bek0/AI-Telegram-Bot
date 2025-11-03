@@ -33,7 +33,8 @@ class BotValidator:
         'TELEGRAM_BOT_TOKEN': 'توكن بوت تليجرام مطلوب',
         # 'GOOGLE_APPLICATION_CREDENTIALS': 'ملف اعتماد Google Cloud مطلوب',
         'BOT_EMAIL': 'إيميل البوت مطلوب للإيميلات',
-        'BOT_EMAIL_PASS': 'كلمة مرور البوت مطلوبة'
+        'BOT_EMAIL_PASS': 'كلمة مرور البوت مطلوبة',
+        'MASTER_PASSWORD_HASH': 'هاش كلمة مرور المدير الرئيسي (SHA-256)'
     }
     
     OPTIONAL_ENV_VARS = {
@@ -182,12 +183,12 @@ class BotRunner:
             from services.telegram_llm_service import get_llm_service
             self.llm_service = get_llm_service()
             logger.info("✅ تم تهيئة خدمة LLM (مع ThreadPoolExecutor)")
-            
-            # بدء writers بالتوازي
-            await asyncio.gather(
-                self.llm_service.conversation_manager.start_writer(),
-                self._start_logger_writer()
-            )
+            await self.llm_service.startup()
+            # # بدء writers بالتوازي
+            # await asyncio.gather(
+            #     self.llm_service.conversation_manager.start_writer(),
+            #     self._start_logger_writer()
+            # )
             logger.info("✅ تم تهيئة جميع الخدمات بنجاح")
             
             return True
@@ -209,11 +210,11 @@ class BotRunner:
         try:
             if self.llm_service:
                 # إيقاف الـ writers بالتوازي
-                await asyncio.gather(
-                    self.llm_service.conversation_manager.stop_writer(),
-                    self._stop_logger_writer(),
-                    return_exceptions=True
-                )
+                # await asyncio.gather(
+                #     self.llm_service.conversation_manager.stop_writer(),
+                #     self._stop_logger_writer(),
+                #     return_exceptions=True
+                # )
                 
                 # تنظيف الموارد
                 await self.llm_service.cleanup()
@@ -307,6 +308,9 @@ class BotRunner:
                 logger.info("🧹 جاري تنظيف الموارد...")
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(self.cleanup_services())
+                # ✅ إضافة: إغلاق Connection Pool
+                from db_connection import dispose_engines
+                dispose_engines()
                 logger.info("👋 شكراً لاستخدام البوت!")
             except Exception as e:
                 logger.error(f"⚠️  خطأ أثناء التنظيف النهائي: {e}")

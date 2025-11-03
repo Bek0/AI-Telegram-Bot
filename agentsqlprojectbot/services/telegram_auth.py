@@ -23,7 +23,7 @@ class UserInfo:
     is_active: bool
     interaction_count: int
     current_database: Optional[str] = None  # معرف قاعدة البيانات النشطة
-    
+    current_database_type: Optional[str] = None  # نوع قاعدة البيانات النشطة
     def to_dict(self) -> Dict[str, Any]:
         """تحويل لـ dictionary"""
         return asdict(self)
@@ -193,7 +193,8 @@ class UserManager:
                 last_seen=now,
                 is_active=True,
                 interaction_count=1,
-                current_database=None
+                current_database=None,
+                current_database_type=None
             )
             self._users_cache[user_id] = user_info
         
@@ -231,7 +232,8 @@ class UserManager:
                 last_seen=now,
                 is_active=True,
                 interaction_count=1,
-                current_database=None
+                current_database=None,
+                current_database_type=None
             )
             self._users_cache[user_id] = user_info
         
@@ -255,10 +257,12 @@ class UserManager:
             self._users_cache[user_id].current_database = database_id
             await self._save_users()
     
-    def set_current_database_sync(self, user_id: int, database_id: Optional[str]):
+    def set_current_database_sync(self, user_id: int, database_id: Optional[str], db_type: Optional[str]):
         """تعيين قاعدة البيانات النشطة - sync version"""
         if user_id in self._users_cache:
             self._users_cache[user_id].current_database = database_id
+            self._users_cache[user_id].current_database_type = db_type
+
             self._save_users_sync()
     
     async def get_user(self, user_id: int) -> Optional[UserInfo]:

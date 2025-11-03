@@ -91,7 +91,7 @@ class TelegramBot:
 
     async def start_background_tasks(self):
         """بدء المهام في الخلفية"""
-        await self.llm_service.conversation_manager.start_writer()
+        # await self.llm_service.conversation_manager.start_writer()
         await self.logger.start_writer()
     
     
@@ -166,7 +166,7 @@ class TelegramBot:
             return
         
         # تعيينها كقاعدة بيانات نشطة تلقائياً
-        self.user_manager.set_current_database_sync(user.id, connection.connection_id)
+        self.user_manager.set_current_database_sync(user.id, connection.connection_id, connection.db_type)
         
         await update.message.reply_text(
             f"✅ تم إضافة قاعدة البيانات '{db_name}' بنجاح!\n\n"
@@ -203,7 +203,7 @@ class TelegramBot:
         connection_string = context.args[1]
         
         # إضافة الاتصال للمؤسسة
-        connection = await self.db_manager.add_connection(
+        connection, db_type = await self.db_manager.add_connection(
             name=db_name,
             connection_string=connection_string,
             created_by=user.id,
@@ -636,7 +636,7 @@ class TelegramBot:
         current_db_name = "لم يتم التحديد"
         if user_info.current_database:
             current_conn = await self.db_manager.get_connection(user_info.current_database)
-            if current_conn and self.db_manager.verify_user_can_access_database(user.id, user_info.current_database):
+            if current_conn and await self.db_manager.verify_user_can_access_database(user.id, user_info.current_database):
                 current_db_name = current_conn.name
             else:
                 # إذا كان الاتصال محذوفاً، امسح التحديد
@@ -885,10 +885,11 @@ class TelegramBot:
             await query.answer(f"خطأ: {reason}", show_alert=True)
             return
         
-        # تعيين قاعدة البيانات النشطة
-        self.user_manager.set_current_database_sync(user.id, db_id)
-        
         conn = await self.db_manager.get_connection(db_id)
+
+        # تعيين قاعدة البيانات النشطة
+        self.user_manager.set_current_database_sync(user.id, db_id, conn.db_type)
+        
         
         await query.edit_message_text(
             f"✅ تم اختيار قاعدة البيانات: **{conn.name}**\n\n"
@@ -1176,34 +1177,64 @@ class TelegramBot:
 
 
     async def history_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """عرض السجل"""
-        user = update.effective_user
-        chat_id = update.effective_chat.id
-        
-        conversations = await self.llm_service.conversation_manager.get_chat_history(
-            chat_id, limit=10
-        )
-        
-        if not conversations:
-            await update.message.reply_text("📭 لا يوجد سجل محادثات")
-            return
-        
-        history_text = "📋 **آخر 10 محادثات:**\n\n"
-        
-        for i, conv in enumerate(conversations, 1):
-            question = conv.get('question', '')[:50]
-            history_text += f"{i}. {question}...\n"
-        
-        await update.message.reply_text(
-            history_text,
+            """عرض السجل مع تنسيق محسّن"""
+            user = update.effective_user
+            chat_id = update.effective_chat.id
             
-        )
-        
-        await self.logger.log_action(
-            user.id, chat_id, "HISTORY_VIEWED",
-            "User viewed chat history",
-            get_user_display_name(user.id)
-        )
+            try:
+                # جلب التاريخ
+                conversations = await self.llm_service.conversation_manager.get_chat_history(
+                    chat_id, limit=10
+                )
+                
+                if not conversations:
+                    await update.message.reply_text(
+                        "📭 لا يوجد سجل محادثات بعد"
+                    )
+                    return
+                
+                # بناء الرسالة بشكل منظم
+                history_text = "📋 *آخر المحادثات:*\n"
+                history_text += "=" * 40 + "\n\n"                
+                for i, conv in enumerate(conversations, 1):
+                    question = conv['question'] or 'بدون سؤال'
+                    role = "👤" if conv['role'] == 'user' else "🤖"
+                    
+                    # صيغة مختصرة إذا كان النص طويل
+                    if len(question) >= 60:
+                        question = question + "..."
+                    
+                    history_text += f"{i}. {role} {question}\n"
+                    
+                    # إضافة الإجابة إذا كانت موجودة
+                    answer = conv['answer']
+                    if answer:
+                        answer_preview = answer
+                        history_text += f"   💬 _{answer_preview}_\n"
+                    
+                
+                # إرسال الرسالة بتنسيق أفضل
+                await update.message.reply_text(
+                    history_text,
+                    parse_mode="Markdown",
+                    disable_web_page_preview=True
+                )
+                
+                # تسجيل الإجراء
+                await self.logger.log_action(
+                    user.id, 
+                    chat_id, 
+                    "HISTORY_VIEWED",
+                    f"User viewed {len(conversations)} conversation entries",
+                    get_user_display_name(user.id)
+                )
+                
+            except Exception as e:
+                print(f"❌ خطأ في عرض السجل: {e}")
+                await update.message.reply_text(
+                    "❌ حدث خطأ أثناء جلب السجل. حاول لاحقاً",
+                    parse_mode="Markdown"
+                )
 
 
     async def stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1270,7 +1301,7 @@ class TelegramBot:
         
         # إنشاء task للمعالجة
         task = asyncio.create_task(
-            self._process_question_wrapper(update, context, user, chat_id, question, user_info.current_database)
+            self._process_question_wrapper(update, context, user, chat_id, question, user_info.current_database, user_info.current_database_type)
         )
         
         # تتبع الـ task
@@ -1283,12 +1314,13 @@ class TelegramBot:
         user,
         chat_id: int,
         question: str,
-        db_id: Any
+        db_id: Any,
+        db_type: str
     ):
         """Wrapper للمعالجة مع تتبع وتنظيف"""
         task = asyncio.current_task()
         try:
-            await self._process_question(update, context, user, chat_id, question, db_id)
+            await self._process_question(update, context, user, chat_id, question, db_id, db_type)
         finally:
             await self._untrack_request(user.id, task)
     
@@ -1299,7 +1331,8 @@ class TelegramBot:
         user, 
         chat_id: int, 
         question: str,
-        db_id: Any
+        db_id: Any,
+        db_type: str
     ):
         """معالجة السؤال بشكل مستقل - محسّن"""
         try:
@@ -1318,7 +1351,8 @@ class TelegramBot:
                     chat_id=chat_id,
                     user_id=user.id,
                     database_id=db_id,  # 🆕 تمرير معرف قاعدة البيانات
-                    org_id=org.org_id
+                    org_id=org.org_id,
+                    db_type=db_type
                 )
             else:
                 answer, sql_query, sql_result, history_len, mail = await self.llm_service.handle_question(
@@ -1326,7 +1360,8 @@ class TelegramBot:
                     username=user.full_name,
                     chat_id=chat_id,
                     user_id=user.id,
-                    database_id=db_id  # 🆕 تمرير معرف قاعدة البيانات
+                    database_id=db_id,  # 🆕 تمرير معرف قاعدة البيانات
+                    db_type=db_type
                 )
             # إعداد الرد
             reply_text = answer
@@ -1497,7 +1532,7 @@ class TelegramBot:
     async def cleanup(self):
         """تنظيف الموارد"""
         await self.llm_service.cleanup()
-        await self.llm_service.conversation_manager.stop_writer()
+        # await self.llm_service.conversation_manager.stop_writer()
         await self.logger.stop_writer()
     
     def run(self):

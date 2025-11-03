@@ -1,4 +1,4 @@
-// /dashboard/static/js/login.js
+// dashboard/static/js/login.js - تعديلات
 
 const form = document.getElementById('loginForm');
 const errorMessage = document.getElementById('errorMessage');
@@ -11,21 +11,17 @@ form.addEventListener('submit', async (e) => {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
 
-    // إخفاء الرسالة السابقة
     errorMessage.classList.remove('show');
 
-    // التحقق من المدخلات
     if (!username || !password) {
         showError('يجب ملء جميع الحقول');
         return;
     }
 
-    // إظهار حالة التحميل
     submitBtn.style.display = 'none';
     loading.style.display = 'block';
 
     try {
-        // إرسال بيانات الدخول
         const response = await fetch('/dashboard/login', {
             method: 'POST',
             headers: {
@@ -46,8 +42,9 @@ form.addEventListener('submit', async (e) => {
             localStorage.setItem('org_id', data.org_id);
             localStorage.setItem('org_name', data.org_name);
             localStorage.setItem('user_id', data.user_id);
-
-            // إعادة التوجيه
+            localStorage.setItem('login_timestamp', new Date().toISOString());
+            
+            // تحقق من الجلسة بعد التوجيه
             window.location.href = '/dashboard/';
         } else {
             showError(data.message || 'فشل تسجيل الدخول');
@@ -56,7 +53,7 @@ form.addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error('Error:', error);
-        showError('حدث خطأ في الاتصال. يرجى المحاولة لاحقاً');
+        showError('حدث خطأ في الاتصال');
         submitBtn.style.display = 'block';
         loading.style.display = 'none';
     }
@@ -67,7 +64,6 @@ function showError(message) {
     errorMessage.classList.add('show');
 }
 
-// مسح الخطأ عند التركيز على الحقول
 document.getElementById('username').addEventListener('focus', () => {
     errorMessage.classList.remove('show');
 });

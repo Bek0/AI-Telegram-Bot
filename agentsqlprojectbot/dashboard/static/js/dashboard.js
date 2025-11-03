@@ -14,6 +14,26 @@ if (!token) {
     window.location.href = '/';
 }
 
+// تحقق من صحة الجلسة عند التحميل
+async function verifySessionOnLoad() {
+    try {
+        const response = await fetch('/dashboard/verify', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                console.warn('⚠️  جلسة منتهية الصلاحية');
+                logout();
+            }
+        }
+    } catch (error) {
+        console.error('❌ خطأ في التحقق من الجلسة:', error);
+    }
+}
+
 // = INITIALIZATION =
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -497,6 +517,7 @@ async function logout() {
     localStorage.removeItem('org_id');
     localStorage.removeItem('org_name');
     localStorage.removeItem('user_id');
+    localStorage.removeItem('login_timestamp');
 
     window.location.href = '/';
 }

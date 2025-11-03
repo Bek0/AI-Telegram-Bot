@@ -6,10 +6,11 @@
     "last_name": "Sam",
     "role": "org_owner",
     "first_seen": "2025-10-07T22:09:54.958592",
-    "last_seen": "2025-10-19T14:04:46.835673",
+    "last_seen": "2025-10-23T14:27:05.104011",
     "is_active": true,
-    "interaction_count": 371,
-    "current_database": "DB_20251020003718_31a0d713"
+    "interaction_count": 372,
+    "current_database": "DB_20251030205949_eabc8d02",
+    "current_database_type": "mssql"
   },
   "7813181783": {
     "user_id": 7813181783,
@@ -21,6 +22,7 @@
     "last_seen": "2025-10-19T02:28:45.880197",
     "is_active": true,
     "interaction_count": 62,
-    "current_database": "DB_20251020003718_31a0d713"
+    "current_database": "DB_20251026193302_55caca4d",
+    "current_database_type": null
   }
 }

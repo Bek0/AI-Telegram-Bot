@@ -441,3 +441,38 @@ ORDER BY P.Category, P.Name;, Email: None
 [2025-10-20 03:09:05] @Ans Sam (Chat:7813181783) | JOINED_ORG | Joined via invite: R4lH4ShV0yqWUQpcgtmQFg
 [2025-10-20 03:09:09] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: كيفك...
 [2025-10-20 03:09:11] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: None, Email: None
+[2025-10-25 17:45:55] @Ans Sam (Chat:7813181783) | ORG_CREATED | Created org: delta_informatic_2
+[2025-10-25 18:04:27] @Ans Sam (Chat:7813181783) | ORG_CREATED | Created org: delta_informatic_2
+[2025-10-25 18:18:10] @Ans Sam (Chat:7813181783) | ORG_CREATED | Created org: delta_informatic_2
+[2025-10-26 17:18:26] @Ans Sam (Chat:7813181783) | JOINED_ORG | Joined via invite: d6NvujmiflDDohuBY521IA
+[2025-10-26 18:18:03] @Ans Sam (Chat:7813181783) | HISTORY_VIEWED | User viewed chat history
+[2025-10-26 18:18:14] @Ans Sam (Chat:7813181783) | MEMORY_CLEARED | User confirmed memory clear
+[2025-10-26 18:18:32] @Ans Sam (Chat:7813181783) | DATABASE_SELECTED | Database: delta_DB_2
+[2025-10-26 18:18:36] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: كم سعر المنتج laptop...
+[2025-10-26 18:18:41] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: SELECT Price FROM Products WHERE Name = 'laptop';, Email: None
+[2025-10-26 18:18:54] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: ماذا عن المنتج hdmi cable...
+[2025-10-26 18:18:57] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: SELECT Price FROM Products WHERE Name = 'hdmi cable';, Email: None
+[2025-10-26 18:21:47] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: المنتج Digital Photo Frame...
+[2025-10-26 18:21:53] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: SELECT Price FROM Products WHERE Name = 'Digital Photo Frame', Email: None
+[2025-10-26 18:23:00] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: Power Bank 20000mAh...
+[2025-10-26 18:23:04] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: SELECT Price FROM Products WHERE Name = 'Power Bank 20000mAh';, Email: None
+[2025-10-26 18:25:28] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: كم متوفر منه في الافرع...
+[2025-10-26 18:25:32] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: SELECT
+  B.BranchName,
+  PB.Stock
+FROM Products AS P
+JOIN ProductBranches AS PB
+  ON P.ProductID = PB.ProductID
+JOIN Branches AS B
+  ON PB.BranchID = B.BranchID
+WHERE
+  P.Name = 'Power Bank 20000mAh';, Email: None
+[2025-10-26 18:32:34] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: شكرا...
+[2025-10-26 18:32:36] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: None, Email: None
+[2025-10-26 19:36:12] @Ans Sam (Chat:7813181783) | JOINED_ORG | Joined via invite: OpfRUglH9iemvu45ZeInog
+[2025-10-26 19:36:56] @Ans Sam (Chat:7813181783) | MEMORY_CLEARED | User confirmed memory clear
+[2025-10-26 19:37:26] @Ans Sam (Chat:7813181783) | DATABASE_SELECTED | Database: nd2
+[2025-10-26 19:37:31] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: كم سعر المنتج laptop...
+[2025-10-26 19:37:35] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: SELECT Price FROM Products WHERE Name = 'laptop', Email: None
+[2025-10-26 19:38:21] @Ans Sam (Chat:7813181783) | QUESTION_ASKED | Question: ارسله سعره في ايميل الى bakr.12170@gmail.com...
+[2025-10-26 19:38:28] @Ans Sam (Chat:7813181783) | QUESTION_ANSWERED | SQL: SELECT Name, Price FROM Products WHERE Name = 'laptop';, Email: email=['bakr.12170@gmail.com'] subject='سعر المنتج laptop' body='Hello \n\nسعر المنتج laptop هو 120000.00.\n\nBest regards,\nYour Company'

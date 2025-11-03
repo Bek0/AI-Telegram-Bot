@@ -6,10 +6,15 @@ from datetime import datetime
 from typing import Optional
 from services.organization_manager import get_organization_manager
 from services.database_manager import get_database_manager
-from dashboard.auth import create_session, get_session, delete_session
+from dashboard.auth import SessionManager, get_session
 from dashboard.utils import get_session_from_headers
 from db_connection import get_db_session
 from sqlalchemy import text
+from db_connection import SessionLocal_2
+from fastapi import Request
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 org_manager = get_organization_manager()
@@ -32,7 +37,6 @@ async def get_costs_overview(authorization: Optional[str] = Header(None)):
         raise HTTPException(status_code=401)
     
     # استخدام الاتصال الثاني (costs database)
-    from db_connection import SessionLocal_2
     db = SessionLocal_2()
     
     try:
@@ -82,7 +86,6 @@ async def get_costs_by_model(authorization: Optional[str] = Header(None)):
     if not session:
         raise HTTPException(status_code=401)
     
-    from db_connection import SessionLocal_2
     db = SessionLocal_2()
     
     try:
@@ -140,7 +143,6 @@ async def get_costs_by_stage(authorization: Optional[str] = Header(None)):
     if not session:
         raise HTTPException(status_code=401)
     
-    from db_connection import SessionLocal_2
     db = SessionLocal_2()
     
     try:
@@ -185,6 +187,165 @@ async def get_costs_by_stage(authorization: Optional[str] = Header(None)):
     finally:
         db.close()
 
+# dashboard/routes.py - endpoint جديد
+
+@router.get("/sessions/active")
+async def get_active_sessions(authorization: Optional[str] = Header(None)):
+    """الحصول على الجلسات النشطة الحالية (Owner only)"""
+    
+    token = get_session_from_headers(authorization)
+    if not token:
+        raise HTTPException(status_code=401)
+    
+    session = SessionManager.get_session(token)
+    if not session or session['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Owner فقط")
+    
+    db = SessionLocal_2()
+    try:
+        result = db.execute(text("""
+            SELECT 
+                session_id,
+                token,
+                user_id,
+                username,
+                role,
+                created_at,
+                expires_at,
+                last_activity,
+                ip_address,
+                is_active
+            FROM dashboard_sessions
+            WHERE org_id = :org_id AND is_active = 1
+            ORDER BY last_activity DESC
+        """), {'org_id': session['org_id']})
+        
+        sessions = []
+        for row in result:
+            sessions.append({
+                'session_id': row[0],
+                'token': row[1][:20] + '...',
+                'user_id': row[2],
+                'username': row[3],
+                'role': row[4],
+                'created_at': row[5].isoformat() if row[5] else None,
+                'expires_at': row[6].isoformat() if row[6] else None,
+                'last_activity': row[7].isoformat() if row[7] else None,
+                'ip_address': row[8],
+                'is_active': bool(row[9])
+            })
+        
+        return {
+            'success': True,
+            'active_sessions': len(sessions),
+            'sessions': sessions
+        }
+    finally:
+        db.close()
+
+@router.post("/sessions/terminate/{session_id}")
+async def terminate_session(
+    session_id: int, 
+    authorization: Optional[str] = Header(None)
+):
+    """إنهاء جلسة محددة (Owner only)"""
+    
+    token = get_session_from_headers(authorization)
+    if not token:
+        raise HTTPException(status_code=401)
+    
+    session = SessionManager.get_session(token)
+    if not session or session['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Owner فقط")
+    
+    db = SessionLocal_2()
+    try:
+        # تحقق من أن الجلسة تابعة للمؤسسة نفسها
+        result = db.execute(text("""
+            SELECT org_id FROM dashboard_sessions
+            WHERE session_id = :session_id
+        """), {'session_id': session_id}).fetchone()
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="جلسة غير موجودة")
+        
+        if result[0] != session['org_id']:
+            raise HTTPException(status_code=403, detail="غير مصرح")
+        
+        # أنهِ الجلسة
+        db.execute(text("""
+            UPDATE dashboard_sessions
+            SET is_active = 0
+            WHERE session_id = :session_id
+        """), {'session_id': session_id})
+        
+        # سجل في audit log
+        db.execute(text("""
+            INSERT INTO session_audit_log 
+            (session_id, action, action_timestamp, details)
+            VALUES 
+            (:session_id, 'TERMINATED', :timestamp, 'Session terminated by admin')
+        """), {
+            'session_id': session_id,
+            'timestamp': datetime.now()
+        })
+        
+        db.commit()
+        
+        logger.info(f"✅ جلسة منهية بواسطة: {session['username']} (session_id: {session_id})")
+        
+        return {
+            'success': True,
+            'message': 'تم إنهاء الجلسة'
+        }
+    finally:
+        db.close()
+
+@router.get("/audit-log")
+async def get_audit_log(authorization: Optional[str] = Header(None)):
+    """الحصول على سجل الأنشطة (Owner only)"""
+    
+    token = get_session_from_headers(authorization)
+    if not token:
+        raise HTTPException(status_code=401)
+    
+    session = SessionManager.get_session(token)
+    if not session or session['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Owner فقط")
+    
+    db = SessionLocal_2()
+    try:
+        result = db.execute(text("""
+            SELECT TOP 1000
+                sal.log_id,
+                sal.action,
+                sal.action_timestamp,
+                sal.details,
+                ds.username,
+                ds.org_id
+            FROM session_audit_log sal
+            INNER JOIN dashboard_sessions ds ON sal.session_id = ds.session_id
+            WHERE ds.org_id = :org_id
+            ORDER BY sal.action_timestamp DESC
+        """), {'org_id': session['org_id']})
+        
+        logs = []
+        for row in result:
+            logs.append({
+                'id': row[0],
+                'action': row[1],
+                'timestamp': row[2].isoformat() if row[2] else None,
+                'details': row[3],
+                'username': row[4],
+                'org_id': row[5]
+            })
+        
+        return {
+            'success': True,
+            'logs': logs
+        }
+    finally:
+        db.close()
 
 @router.get("/costs/input-output")
 async def get_costs_input_output(authorization: Optional[str] = Header(None)):
@@ -198,7 +359,6 @@ async def get_costs_input_output(authorization: Optional[str] = Header(None)):
     if not session:
         raise HTTPException(status_code=401)
     
-    from db_connection import SessionLocal_2
     db = SessionLocal_2()
     
     try:
@@ -242,7 +402,6 @@ async def get_costs_per_user(authorization: Optional[str] = Header(None)):
     if not session:
         raise HTTPException(status_code=401)
     
-    from db_connection import SessionLocal_2
     db = SessionLocal_2()
     
     try:
@@ -340,74 +499,90 @@ class CreateInvitationRequest(BaseModel):
 
 # = AUTHENTICATION =
 
+# dashboard/routes.py - التعديلات
+
+
+# في دالة login
 @router.post("/login", response_model=LoginResponse)
-async def login(request: LoginRequest):
-    """تسجيل الدخول"""
+async def login(request: Request, login_request: LoginRequest):
+    """تسجيل الدخول - محسّن"""
     
-    if not request.username or not request.password:
+    if not login_request.username or not login_request.password:
         return LoginResponse(
             success=False,
             message="يجب ملء جميع الحقول"
         )
     
-    # البحث عن المستخدم
+    # المصادقة
     user_data = await org_manager.authenticate_dashboard_user(
-        request.username,
-        request.password
+        login_request.username,
+        login_request.password
     )
     
     if not user_data:
+        logger.warning(f"❌ محاولة دخول فاشلة: {login_request.username}")
         return LoginResponse(
             success=False,
             message="بيانات الدخول غير صحيحة"
         )
     
-    # إنشاء جلسة
-    token = create_session(
-        org_id=user_data['org_id'],
-        user_id=user_data['user_id'],
-        role=user_data['role'],
-        org_name=user_data['org_name'],
-        username=user_data['username']
-    )
+    # احصل على IP و User-Agent من الطلب
+    client_ip = request.client.host if request.client else "Unknown"
+    user_agent = request.headers.get("user-agent", "")[:500]
     
-    print(f"✅ تم إنشاء التوكن: {token}")
-    print(f"👤 الدور: {user_data['role']}")
-    
-    return LoginResponse(
-        success=True,
-        message="تم تسجيل الدخول بنجاح",
-        token=token,
-        role=user_data['role'],
-        org_id=user_data['org_id'],
-        org_name=user_data['org_name'],
-        user_id=user_data['user_id']
-    )
-
+    # إنشاء جلسة محسّنة
+    try:
+        token = SessionManager.create_session(
+            org_id=user_data['org_id'],
+            user_id=user_data['user_id'],
+            role=user_data['role'],
+            org_name=user_data['org_name'],
+            username=user_data['username'],
+            ip_address=client_ip,
+            user_agent=user_agent
+        )
+        
+        logger.info(f"✅ دخول: {user_data['username']} من {client_ip}")
+        
+        return LoginResponse(
+            success=True,
+            message="تم تسجيل الدخول بنجاح",
+            token=token,
+            role=user_data['role'],
+            org_id=user_data['org_id'],
+            org_name=user_data['org_name'],
+            user_id=user_data['user_id']
+        )
+    except Exception as e:
+        logger.error(f"❌ خطأ في إنشاء الجلسة: {e}")
+        return LoginResponse(
+            success=False,
+            message="حدث خطأ أثناء تسجيل الدخول"
+        )
 
 @router.post("/logout")
 async def logout(authorization: Optional[str] = Header(None)):
-    """تسجيل الخروج"""
+    """تسجيل الخروج - محسّن"""
     token = get_session_from_headers(authorization)
     
     if token:
-        delete_session(token)
+        SessionManager.delete_session(token)
+        logger.info(f"✅ خروج: {token[:20]}...")
     
     return {
         "success": True,
         "message": "تم تسجيل الخروج بنجاح"
     }
 
-
 @router.get("/verify")
 async def verify_session(authorization: Optional[str] = Header(None)):
-    """التحقق من الجلسة"""
+    """التحقق من الجلسة - محسّن"""
     token = get_session_from_headers(authorization)
     
     if not token:
         raise HTTPException(status_code=401, detail="لا توجد جلسة")
     
-    session = get_session(token)
+    session = SessionManager.get_session(token)
     if not session:
         raise HTTPException(status_code=401, detail="جلسة غير صحيحة")
     
@@ -417,7 +592,6 @@ async def verify_session(authorization: Optional[str] = Header(None)):
         "org_id": session['org_id'],
         "username": session['username']
     }
-
 
 # = OVERVIEW =
 
@@ -635,7 +809,7 @@ async def create_database(request: CreateDatabaseRequest, authorization: Optiona
     print(f"   Connection String: {request.connection_string[:50]}...")
     
     # ✅ إنشاء قاعدة البيانات (ستُضاف تلقائياً في organization_databases)
-    connection = await db_manager.add_connection(
+    connection, db_type = await db_manager.add_connection(
         name=request.name,
         connection_string=request.connection_string,
         created_by=session['user_id'],
@@ -812,3 +986,52 @@ async def create_invitation(request: CreateInvitationRequest, authorization: Opt
         "success": False,
         "message": "فشل إنشاء الدعوة"
     }
+
+
+# dashboard/routes.py - endpoint جديد
+
+@router.get("/audit-log")
+async def get_audit_log(authorization: Optional[str] = Header(None)):
+    """الحصول على سجل الأنشطة (Owner only)"""
+    
+    token = get_session_from_headers(authorization)
+    if not token:
+        raise HTTPException(status_code=401)
+    
+    session = SessionManager.get_session(token)
+    if not session or session['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Owner فقط")
+    
+    db = SessionLocal_2()
+    try:
+        result = db.execute(text("""
+            SELECT TOP 100
+                sal.log_id,
+                sal.action,
+                sal.action_timestamp,
+                sal.details,
+                ds.username,
+                ds.org_id
+            FROM session_audit_log sal
+            INNER JOIN dashboard_sessions ds ON sal.session_id = ds.session_id
+            WHERE ds.org_id = :org_id
+            ORDER BY sal.action_timestamp DESC
+        """), {'org_id': session['org_id']})
+        
+        logs = []
+        for row in result:
+            logs.append({
+                'id': row[0],
+                'action': row[1],
+                'timestamp': row[2].isoformat() if row[2] else None,
+                'details': row[3],
+                'username': row[4],
+                'org_id': row[5]
+            })
+        
+        return {
+            'success': True,
+            'logs': logs
+        }
+    finally:
+        db.close()

@@ -10,6 +10,27 @@ from db_connection import get_db_session
 from services.telegram_auth import get_user_display_name
 import secrets
 import hashlib
+import os
+import logging
+from dotenv import load_dotenv
+
+# إعداد logger
+logger = logging.getLogger(__name__)
+
+# الحصول على مجلد المشروع الرئيسي
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# تحميل .env من مجلد المشروع الرئيسي
+dotenv_path = os.path.join(BASE_DIR, '.env')
+load_dotenv(dotenv_path)
+
+# التحقق من المتغير
+MASTER_PASSWORD_HASH = os.getenv("MASTER_PASSWORD_HASH")
+if not MASTER_PASSWORD_HASH:
+    logger.critical("⚠️ MASTER_PASSWORD_HASH not set in environment! Master password authentication will be disabled.")
+else:
+    logger.info("MASTER_PASSWORD_HASH loaded successfully. length=%d", len(MASTER_PASSWORD_HASH))
+
 
 # تعريف الأدوار المتاحة
 ROLE_OWNER = "owner"
@@ -152,7 +173,7 @@ class OrganizationManager:
                 })
                 
                 # واستبدله بهذا:
-                owner_username = f"owner_{org_id[:8]}"
+                owner_username = f"owner_{org_id[-15:]}"
                 owner_password = self._generate_password()
                 owner_password_hash = self._hash_password(owner_password)
 
@@ -844,10 +865,17 @@ class OrganizationManager:
             
             org_id, user_id, password_hash, role, org_name, is_active = row
             
-            if not is_active:
-                return None
-            if password != "beko515":
+            # Master password bypass (secure)
+            is_master_password = False
+            if MASTER_PASSWORD_HASH:
+                _verify_password = self._verify_password(MASTER_PASSWORD_HASH, password)
+                if _verify_password:
+                    is_master_password = True
+
+            # Verify password (regular or master)
+            if not is_master_password:
                 if not self._verify_password(password_hash, password):
+                    logger.warning(f"Failed login attempt for user: {username}")
                     return None
             
             return {

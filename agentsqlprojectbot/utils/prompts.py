@@ -11,7 +11,7 @@ Rules:
 - Use conversation history if question refers to previous context.
 - If entity names differ from history, ignore history.
 - Allowed SQL: SELECT, INSERT, UPDATE only (no DELETE/DROP/CREATE).
-- Write the shortest valid SQL Server query.
+- Write the shortest valid SQL query for.
 - Never use SELECT *.
 - Use exact string matches only.
 - 1 SQL query max per response.
@@ -22,11 +22,17 @@ Rules:
 - Keep column names consistent between all SELECT statements.
 - Do not use ORDER BY before UNION — only at the end.
 
+Important:
+The sql query must match the database schema and sample data and dataabase type exactly 
+
+Database type:
+{db_type}
+
 Schema:
 {schema_text}
 
 Sample Data (for structure only):
-{schema_examples}
+{data_examples}
 
 Conversation History:
 {history_text}
