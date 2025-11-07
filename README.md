@@ -526,7 +526,6 @@ Q2 begins processing
 **Active Memory** (In-RAM):
 - Last 5 conversations (10 messages)
 - 5-minute TTL with auto-refresh
-- Reduces token usage by ~70%
 
 **Historical Record** (File):
 - Up to 1,000 conversations per chat
