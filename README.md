@@ -18,16 +18,12 @@ graph TD
     
     %% Path 2: SQL Query
     Decide -->|SQL Query| SQLPath["🔍 تصميم استعلام<br/>SQL"]
-    SQLPath --> Stage2["⚙️ المرحلة 2: التنفيذ<br/>Gemini 2.0-Flash"]
-    Stage2 --> ExecuteDB["🗄️ SQL Server<br/>تنفيذ الاستعلام"]
-    ExecuteDB --> ProcessResults["📊 معالجة النتائج<br/>إعادة الصياغة"]
-    ProcessResults --> SendSQL["📨 إرسال الإجابة"]
+    SQLPath --> Stage2["⚙️ المرحلة 2: التنفيذ وصياغة الجواب<br/>Gemini 2.0-Flash"]
+    Stage2 --> SendSQL["📨 إرسال الإجابة"]
     
     %% Path 3: Email Generation
     Decide -->|Email| EmailPath["📧 توليد البريد<br/>Gemini 2.5-Flash"]
-    EmailPath --> Stage3["✉️ المرحلة 3: البريد"]
-    Stage3 --> GenerateEmail["🎨 صياغة محتوى البريد<br/>بتنسيق احترافي"]
-    GenerateEmail --> SendEmail["📤 Gmail SMTP<br/>إرسال البريد"]
+    EmailPath --> SendEmail["📤 Gmail SMTP<br/>إرسال البريد"]
     
     %% Logging and Tracking
     SendDirect --> SaveConv["💾 حفظ في قاعدة البيانات"]
@@ -39,12 +35,19 @@ graph TD
     Dashboard --> End["✅ انتهى"]
     
     style Start fill:#0088cc,stroke:#005fa3,color:#fff
+    style Input fill:#0088cc,stroke:#005fa3,color:#fff
     style Stage1 fill:#e74c3c,stroke:#c0392b,color:#fff
+    style Decide fill:#f39c12,stroke:#d68910,color:#fff
+    style DirectPath fill:#3498db,stroke:#2980b9,color:#fff
+    style SendDirect fill:#16a085,stroke:#138d75,color:#fff
+    style SQLPath fill:#3498db,stroke:#2980b9,color:#fff
     style Stage2 fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style Stage3 fill:#27ae60,stroke:#1e8449,color:#fff
-    style ExecuteDB fill:#3498db,stroke:#2980b9,color:#fff
+    style SendSQL fill:#16a085,stroke:#138d75,color:#fff
+    style EmailPath fill:#3498db,stroke:#2980b9,color:#fff
+    style SendEmail fill:#16a085,stroke:#138d75,color:#fff
     style SaveConv fill:#f39c12,stroke:#d68910,color:#fff
-    style Dashboard fill:#16a085,stroke:#138d75,color:#fff
+    style LogCosts fill:#f39c12,stroke:#d68910,color:#fff
+    style Dashboard fill:#27ae60,stroke:#1e8449,color:#fff
     style End fill:#27ae60,stroke:#1e8449,color:#fff
 ```
 
