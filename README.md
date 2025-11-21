@@ -6,51 +6,94 @@
 ### small workflow
 
 ```mermaid
+# Mermaid Flowchart - التقنيات مع سير العمل
+
+```mermaid
 graph TD
-    Start["👤 User Question<br/>on Telegram"] --> Stage1["🧠 Stage 1: Analysis<br/><br/>Gemini 2.5-Flash<br/>────────────────<br/>• Load conversation history<br/>• Analyze question<br/>• Load DB schema<br/>• Decide response type"]
+    Start["🚀 البداية"] --> TelegramChoice{المستخدم يختار}
     
-    Stage1 --> Decision{Response Type?}
+    %% ===== TELEGRAM BOT PATH =====
+    TelegramChoice -->|Telegram App| TBot["📱 Telegram Bot API"]
+    TBot --> UserMsg["📨 رسالة المستخدم"]
     
-    Decision -->|SQL Query Needed| Stage2["⚙️ Stage 2: SQL Execution<br/><br/>Gemini 2.0-Flash<br/>────────────────<br/>• Execute SQL query<br/>• Get results from DB<br/>• Format data<br/>• Generate natural response"]
+    UserMsg --> BotChoice{نوع الرسالة؟}
     
-    Decision -->|Direct Answer| Stage3Direct["✅ Use Cached Answer<br/>from History"]
+    BotChoice -->|أمر| Command["⚙️ معالجة الأمر<br/>Python + FastAPI"]
+    Command --> SaveDB["💾 حفظ في SQL Server<br/>users, organizations"]
+    SaveDB --> TelegramReply["📤 رد Telegram"]
     
-    Decision -->|Email Needed| Stage3["📧 Stage 3: Email Generation<br/><br/>Gemini 2.5-Flash<br/>────────────────<br/>• Extract recipients<br/>• Generate email HTML<br/>• Create mail object"]
+    BotChoice -->|سؤال| Question["🤖 معالجة السؤال"]
+    Question --> Stage1["🔍 المرحلة 1: التحليل<br/>Gemini 2.5-Flash API"]
     
-    Stage2 --> Combine["📊 Combine Results"]
-    Stage3Direct --> Combine
-    Stage3 --> Combine
+    Stage1 --> Decision{نوع الإجابة؟}
     
-    Combine --> CalcCost["💰 Calculate Tokens & Costs<br/><br/>Token Counter<br/>────────────────<br/>• Count input tokens<br/>• Count output tokens<br/>• Calculate cost per stage<br/>• Update user balance"]
+    Decision -->|SQL Query| Stage2["⚙️ المرحلة 2: تنفيذ SQL<br/>SQL Server<br/>Gemini 2.0-Flash"]
+    Decision -->|إجابة مباشرة| Response1["📝 إجابة"]
+    Decision -->|إيميل| Stage3["📧 المرحلة 3: إيميل<br/>Gemini 2.5-Flash API"]
     
-    CalcCost --> SaveDB["💾 Save to Database<br/><br/>SQL Server<br/>────────────────<br/>• Save conversation<br/>• Save stage data<br/>• Update model usage<br/>• Log org costs"]
+    Stage2 --> FormatResults["📊 تنسيق النتائج<br/>Gemini 2.0-Flash"]
+    FormatResults --> Response1
     
-    SaveDB --> Response["📨 Send Response<br/>to User<br/><br/>Telegram Bot API<br/>────────────────"]
+    Stage3 --> GenEmail["📧 توليد بريد<br/>Gmail SMTP"]
+    GenEmail --> Response1
     
-    Response --> HasEmail{Has Email?}
+    Response1 --> SaveConversation["💾 حفظ المحادثة<br/>SQL Server<br/>JSON Storage"]
+    SaveConversation --> TrackCost["💰 تتبع التكاليف<br/>حساب Tokens"]
+    TrackCost --> SendTelegram["📤 إرسال الرد<br/>Telegram API"]
+    SendTelegram --> Ready1["✅ انتظار رسالة جديدة"]
     
-    HasEmail -->|Yes| EmailBtn["Show Email Preview Button"]
-    HasEmail -->|No| End["✅ Conversation Complete"]
+    %% ===== WEB DASHBOARD PATH =====
+    TelegramChoice -->|Web Browser| Dashboard["🌐 Web Dashboard"]
+    Dashboard --> Login["🔐 تسجيل الدخول"]
+    Login --> AuthCheck["✅ التحقق<br/>SQL Server<br/>dashboard_users"]
+    AuthCheck --> JWT["🔐 إنشاء JWT Token<br/>FastAPI"]
+    JWT --> DashLoad["📊 تحميل لوحة التحكم"]
     
-    EmailBtn --> UserConfirm{User Confirms<br/>Send?}
+    DashLoad --> DashChoice{الصفحة المختارة؟}
     
-    UserConfirm -->|Yes| SendEmail["📤 Send Email<br/><br/>Gmail SMTP<br/>────────────────<br/>• Connect to SMTP<br/>• Send formatted email"]
+    DashChoice -->|الأعضاء| Members["👥 إدارة الأعضاء<br/>FastAPI API"]
+    Members --> MembersDB["💾 SQL Server<br/>organization_members"]
     
-    UserConfirm -->|No| End
+    DashChoice -->|القواعس| Databases["🗄️ إدارة قواعس البيانات<br/>FastAPI API"]
+    Databases --> DBConn["🔌 اختبار الاتصال<br/>database_connections"]
+    DBConn --> DBConnDB["💾 SQL Server<br/>database_connections"]
     
-    SendEmail --> LogEmail["📋 Log Email Action<br/>in Database"]
-    LogEmail --> End
+    DashChoice -->|الدعوات| Invites["🎫 إدارة الدعوات<br/>FastAPI API"]
+    Invites --> InvDB["💾 SQL Server<br/>invitations"]
     
-    style Start fill:#0088cc,stroke:#005fa3,color:#fff,stroke-width:3px
-    style Stage1 fill:#e74c3c,stroke:#c0392b,color:#fff,stroke-width:2px
-    style Stage2 fill:#9b59b6,stroke:#7d3c98,color:#fff,stroke-width:2px
-    style Stage3Direct fill:#27ae60,stroke:#1e8449,color:#fff,stroke-width:2px
-    style Stage3 fill:#f39c12,stroke:#d68910,color:#fff,stroke-width:2px
-    style CalcCost fill:#3498db,stroke:#2980b9,color:#fff,stroke-width:2px
-    style SaveDB fill:#1abc9c,stroke:#16a085,color:#fff,stroke-width:2px
-    style Response fill:#34495e,stroke:#2c3e50,color:#fff,stroke-width:2px
-    style SendEmail fill:#e67e22,stroke:#d35400,color:#fff,stroke-width:2px
-    style End fill:#27ae60,stroke:#1e8449,color:#fff,stroke-width:3px
+    DashChoice -->|التكاليف| Costs["💰 لوحة التكاليف<br/>FastAPI API"]
+    Costs --> CostsDB["📊 استعلام<br/>SQL Server<br/>ModelUsage, StagesUsage"]
+    CostsDB --> CostsDisplay["📈 عرض الرسوم البيانية<br/>JavaScript Charts"]
+    
+    Members --> UpdateUI["🔄 تحديث الواجهة<br/>React / HTML+JS"]
+    Databases --> UpdateUI
+    Invites --> UpdateUI
+    CostsDisplay --> UpdateUI
+    
+    UpdateUI --> Logout["🔴 تسجيل الخروج<br/>حذف الجلسة"]
+    Logout --> Ready2["✅ العودة لصفحة الدخول"]
+    
+    %% Connection back
+    Ready1 --> TelegramChoice
+    Ready2 --> TelegramChoice
+    
+    %% ===== Backend Infrastructure =====
+    BackendGroup["🏗️ البنية التحتية<br/>Backend Infrastructure"]
+    BackendGroup -.->|جميع الطلبات| FastAPI["⚡ FastAPI Server<br/>Python + Async/Await"]
+    FastAPI -.->|قاعدة البيانات| SQLServer["💾 SQL Server<br/>SQLAlchemy ORM"]
+    FastAPI -.->|الذكاء الاصطناعي| Gemini["🤖 Google Gemini API<br/>عدة نماذج"]
+    FastAPI -.->|البريد الإلكتروني| Gmail["📧 Gmail SMTP<br/>إرسال الرسائل"]
+    
+    style Start fill:#0088cc,stroke:#005fa3,color:#fff
+    style TBot fill:#0088cc,stroke:#005fa3,color:#fff
+    style Stage1 fill:#e74c3c,stroke:#c0392b,color:#fff
+    style Stage2 fill:#9b59b6,stroke:#7d3c98,color:#fff
+    style Stage3 fill:#27ae60,stroke:#1e8449,color:#fff
+    style Dashboard fill:#27ae60,stroke:#1e8449,color:#fff
+    style Costs fill:#3498db,stroke:#2980b9,color:#fff
+    style BackendGroup fill:#f39c12,stroke:#d68910,color:#fff
+    style FastAPI fill:#e67e22,stroke:#d35400,color:#fff
+```
 ```
 
 ```mermaid
