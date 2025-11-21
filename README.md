@@ -14,7 +14,6 @@ graph TD
     
     %% Path 1: Direct Answer from History
     Decide -->|من السجل<br/>History| DirectPath["📋 الإجابة من<br/>آخر 5 محادثات"]
-    DirectPath --> SendDirect["📨 إرسال الإجابة<br/>مباشرة"]
     
     %% Path 2: SQL Query
     Decide -->|SQL Query| SQLPath["🔍 تصميم استعلام<br/>SQL"]
@@ -31,7 +30,6 @@ graph TD
     SendEmail --> SaveConv
     
     SaveConv --> LogCosts["💰 تسجيل التكاليف<br/>حساب Tokens"]
-    LogCosts --> Dashboard["📊 Dashboard<br/>تحديث الإحصائيات"]
     Dashboard --> End["✅ انتهى"]
     
     style Start fill:#0088cc,stroke:#005fa3,color:#fff
