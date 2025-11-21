@@ -7,33 +7,33 @@
 
 ```mermaid
 graph TD
-    Start["User asks a question"] --> Input["Telegram Bot - Receive message"]
+    Start["User question"] --> Input["Telegram Bot - Receive"]
     Input --> Analysis["Analysis"]
 
-    Analysis --> Decide{Response type?}
+    Analysis --> Decide{Response type}
     
     %% Path 1
-    Decide -->|History| DirectPath["Fetch answer from last 5 conversations"]
-    DirectPath --> SendDirect["Send direct answer"]
+    Decide -->|History| DirectPath["Get last 5 messages"]
+    DirectPath --> SendDirect["Send answer"]
     
     %% Path 2
-    Decide -->|SQL Query| SQLPath["Design SQL query"]
-    SQLPath --> GenerateSQL["Execute query and generate response"]
-    GenerateSQL --> SendSQL["Send SQL-based answer"]
+    Decide -->|SQL| SQLPath["Build SQL query"]
+    SQLPath --> GenerateSQL["Run query + draft reply"]
+    GenerateSQL --> SendSQL["Send SQL reply"]
     
     %% Path 3
     Decide -->|Email| EmailPath["Generate email"]
-    EmailPath --> SendEmail["Send email via SMTP"]
+    EmailPath --> SendEmail["Send via SMTP"]
     
     %% Logging
-    SendDirect --> SaveConv["Save conversation in database"]
+    SendDirect --> SaveConv["Save to database"]
     SendSQL --> SaveConv
     SendEmail --> SaveConv
     
-    SaveConv --> LogCosts["Log token usage and costs"]
-    LogCosts --> Dashboard["Dashboard - Update statistics"]
+    SaveConv --> LogCosts["Log token usage"]
+    LogCosts --> Dashboard["Update dashboard"]
     Dashboard --> End["End"]
-    
+
     %% GREY THEME
     style Start fill:#4F4F4F,stroke:#333,color:#fff
     style Input fill:#4F4F4F,stroke:#333,color:#fff
