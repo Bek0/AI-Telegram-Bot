@@ -4,6 +4,55 @@
 ⚠️ IMPORTANT NOTICE: This project code is currently NOT FOR PUBLIC RELEASE. The codebase is proprietary and under active development. Documentation is provided for internal reference and stakeholder review only.
 
 ### small workflow
+
+```mermaid
+graph TD
+    Start["👤 User Question<br/>on Telegram"] --> Stage1["🧠 Stage 1: Analysis<br/><br/>Gemini 2.5-Flash<br/>────────────────<br/>• Load conversation history<br/>• Analyze question<br/>• Load DB schema<br/>• Decide response type"]
+    
+    Stage1 --> Decision{Response Type?}
+    
+    Decision -->|SQL Query Needed| Stage2["⚙️ Stage 2: SQL Execution<br/><br/>Gemini 2.0-Flash<br/>────────────────<br/>• Execute SQL query<br/>• Get results from DB<br/>• Format data<br/>• Generate natural response"]
+    
+    Decision -->|Direct Answer| Stage3Direct["✅ Use Cached Answer<br/>from History"]
+    
+    Decision -->|Email Needed| Stage3["📧 Stage 3: Email Generation<br/><br/>Gemini 2.5-Flash<br/>────────────────<br/>• Extract recipients<br/>• Generate email HTML<br/>• Create mail object"]
+    
+    Stage2 --> Combine["📊 Combine Results"]
+    Stage3Direct --> Combine
+    Stage3 --> Combine
+    
+    Combine --> CalcCost["💰 Calculate Tokens & Costs<br/><br/>Token Counter<br/>────────────────<br/>• Count input tokens<br/>• Count output tokens<br/>• Calculate cost per stage<br/>• Update user balance"]
+    
+    CalcCost --> SaveDB["💾 Save to Database<br/><br/>SQL Server<br/>────────────────<br/>• Save conversation<br/>• Save stage data<br/>• Update model usage<br/>• Log org costs"]
+    
+    SaveDB --> Response["📨 Send Response<br/>to User<br/><br/>Telegram Bot API<br/>────────────────"]
+    
+    Response --> HasEmail{Has Email?}
+    
+    HasEmail -->|Yes| EmailBtn["Show Email Preview Button"]
+    HasEmail -->|No| End["✅ Conversation Complete"]
+    
+    EmailBtn --> UserConfirm{User Confirms<br/>Send?}
+    
+    UserConfirm -->|Yes| SendEmail["📤 Send Email<br/><br/>Gmail SMTP<br/>────────────────<br/>• Connect to SMTP<br/>• Send formatted email"]
+    
+    UserConfirm -->|No| End
+    
+    SendEmail --> LogEmail["📋 Log Email Action<br/>in Database"]
+    LogEmail --> End
+    
+    style Start fill:#0088cc,stroke:#005fa3,color:#fff,stroke-width:3px
+    style Stage1 fill:#e74c3c,stroke:#c0392b,color:#fff,stroke-width:2px
+    style Stage2 fill:#9b59b6,stroke:#7d3c98,color:#fff,stroke-width:2px
+    style Stage3Direct fill:#27ae60,stroke:#1e8449,color:#fff,stroke-width:2px
+    style Stage3 fill:#f39c12,stroke:#d68910,color:#fff,stroke-width:2px
+    style CalcCost fill:#3498db,stroke:#2980b9,color:#fff,stroke-width:2px
+    style SaveDB fill:#1abc9c,stroke:#16a085,color:#fff,stroke-width:2px
+    style Response fill:#34495e,stroke:#2c3e50,color:#fff,stroke-width:2px
+    style SendEmail fill:#e67e22,stroke:#d35400,color:#fff,stroke-width:2px
+    style End fill:#27ae60,stroke:#1e8449,color:#fff,stroke-width:3px
+```
+
 ```mermaid
 graph TD
     Start["🚀 Smart Data System"] --> Choose{Choose Your Way}
