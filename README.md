@@ -8,9 +8,9 @@
 ```mermaid
 graph TD
     Start["User asks a question"] --> Input["Telegram Bot - Receive message"]
-    Input --> Stage1["Stage 1: Analysis - Gemini 2.5-Flash"]
-    
-    Stage1 --> Decide{Response type?}
+    Input --> Analysis["Analysis"]
+
+    Analysis --> Decide{Response type?}
     
     %% Path 1
     Decide -->|History| DirectPath["Fetch answer from last 5 conversations"]
@@ -18,12 +18,12 @@ graph TD
     
     %% Path 2
     Decide -->|SQL Query| SQLPath["Design SQL query"]
-    SQLPath --> Stage2["Stage 2: Execution and response generation - Gemini 2.0-Flash"]
-    Stage2 --> SendSQL["Send SQL-based answer"]
+    SQLPath --> GenerateSQL["Execute query and generate response"]
+    GenerateSQL --> SendSQL["Send SQL-based answer"]
     
     %% Path 3
-    Decide -->|Email| EmailPath["Generate email - Gemini 2.5-Flash"]
-    EmailPath --> SendEmail["Send email via Gmail SMTP"]
+    Decide -->|Email| EmailPath["Generate email"]
+    EmailPath --> SendEmail["Send email via SMTP"]
     
     %% Logging
     SendDirect --> SaveConv["Save conversation in database"]
@@ -38,8 +38,7 @@ graph TD
     style Start fill:#4F4F4F,stroke:#333,color:#fff
     style Input fill:#4F4F4F,stroke:#333,color:#fff
 
-    style Stage1 fill:#6E6E6E,stroke:#4A4A4A,color:#fff
-    style Stage2 fill:#6E6E6E,stroke:#4A4A4A,color:#fff
+    style Analysis fill:#6E6E6E,stroke:#4A4A4A,color:#fff
 
     style Decide fill:#BDBDBD,stroke:#9E9E9E,color:#000
     style SaveConv fill:#BDBDBD,stroke:#9E9E9E,color:#000
@@ -48,6 +47,7 @@ graph TD
     style DirectPath fill:#828282,stroke:#5E5E5E,color:#fff
     style SQLPath fill:#828282,stroke:#5E5E5E,color:#fff
     style EmailPath fill:#828282,stroke:#5E5E5E,color:#fff
+    style GenerateSQL fill:#828282,stroke:#5E5E5E,color:#fff
 
     style SendDirect fill:#A0A0A0,stroke:#7A7A7A,color:#fff
     style SendSQL fill:#A0A0A0,stroke:#7A7A7A,color:#fff
