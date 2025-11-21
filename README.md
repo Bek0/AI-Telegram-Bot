@@ -7,32 +7,32 @@
 
 ```mermaid
 graph TD
-    Start["👤 المستخدم يسأل سؤال"] --> Input["📱 Telegram Bot<br/>استقبال الرسالة"]
-    Input --> Stage1["🧠 المرحلة 1: التحليل<br/>Gemini 2.5-Flash"]
+    Start["User asks a question"] --> Input["Telegram Bot - Receive message"]
+    Input --> Stage1["Stage 1: Analysis - Gemini 2.5-Flash"]
     
-    Stage1 --> Decide{نوع الاستجابة؟}
+    Stage1 --> Decide{Response type?}
     
     %% Path 1
-    Decide -->|من السجل<br/>History| DirectPath["📋 الإجابة من<br/>آخر 5 محادثات"]
-    DirectPath --> SendDirect["📨 إرسال الإجابة<br/>مباشرة"]
+    Decide -->|History| DirectPath["Fetch answer from last 5 conversations"]
+    DirectPath --> SendDirect["Send direct answer"]
     
     %% Path 2
-    Decide -->|SQL Query| SQLPath["🔍 تصميم استعلام<br/>SQL"]
-    SQLPath --> Stage2["⚙️ المرحلة 2: التنفيذ وصياغة الجواب<br/>Gemini 2.0-Flash"]
-    Stage2 --> SendSQL["📨 إرسال الإجابة"]
+    Decide -->|SQL Query| SQLPath["Design SQL query"]
+    SQLPath --> Stage2["Stage 2: Execution and response generation - Gemini 2.0-Flash"]
+    Stage2 --> SendSQL["Send SQL-based answer"]
     
     %% Path 3
-    Decide -->|Email| EmailPath["📧 توليد البريد<br/>Gemini 2.5-Flash"]
-    EmailPath --> SendEmail["📤 Gmail SMTP<br/>إرسال البريد"]
+    Decide -->|Email| EmailPath["Generate email - Gemini 2.5-Flash"]
+    EmailPath --> SendEmail["Send email via Gmail SMTP"]
     
     %% Logging
-    SendDirect --> SaveConv["💾 حفظ في قاعدة البيانات"]
+    SendDirect --> SaveConv["Save conversation in database"]
     SendSQL --> SaveConv
     SendEmail --> SaveConv
     
-    SaveConv --> LogCosts["💰 تسجيل التكاليف<br/>حساب Tokens"]
-    LogCosts --> Dashboard["📊 Dashboard<br/>تحديث الإحصائيات"]
-    Dashboard --> End["🏁 انتهى"]
+    SaveConv --> LogCosts["Log token usage and costs"]
+    LogCosts --> Dashboard["Dashboard - Update statistics"]
+    Dashboard --> End["End"]
     
     %% GREY THEME
     style Start fill:#4F4F4F,stroke:#333,color:#fff
