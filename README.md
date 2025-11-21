@@ -34,26 +34,26 @@ graph TD
     LogCosts --> Dashboard["📊 Dashboard<br/>تحديث الإحصائيات"]
     Dashboard --> End["🏁 انتهى"]
     
-    %% Colors (Improved Palette)
-    style Start fill:#2D9CDB,stroke:#2379A8,color:#fff
-    style Input fill:#2D9CDB,stroke:#2379A8,color:#fff
+    %% GREY THEME
+    style Start fill:#4F4F4F,stroke:#333,color:#fff
+    style Input fill:#4F4F4F,stroke:#333,color:#fff
 
-    style Stage1 fill:#9B51E0,stroke:#7B3BB5,color:#fff
-    style Stage2 fill:#9B51E0,stroke:#7B3BB5,color:#fff
+    style Stage1 fill:#6E6E6E,stroke:#4A4A4A,color:#fff
+    style Stage2 fill:#6E6E6E,stroke:#4A4A4A,color:#fff
 
-    style Decide fill:#F2C94C,stroke:#D4A226,color:#000
-    style SaveConv fill:#F2C94C,stroke:#D4A226,color:#000
-    style LogCosts fill:#F2C94C,stroke:#D4A226,color:#000
+    style Decide fill:#BDBDBD,stroke:#9E9E9E,color:#000
+    style SaveConv fill:#BDBDBD,stroke:#9E9E9E,color:#000
+    style LogCosts fill:#BDBDBD,stroke:#9E9E9E,color:#000
     
-    style DirectPath fill:#56CCF2,stroke:#2D9CDB,color:#fff
-    style SQLPath fill:#56CCF2,stroke:#2D9CDB,color:#fff
-    style EmailPath fill:#56CCF2,stroke:#2D9CDB,color:#fff
+    style DirectPath fill:#828282,stroke:#5E5E5E,color:#fff
+    style SQLPath fill:#828282,stroke:#5E5E5E,color:#fff
+    style EmailPath fill:#828282,stroke:#5E5E5E,color:#fff
 
-    style SendDirect fill:#27AE60,stroke:#1E8449,color:#fff
-    style SendSQL fill:#27AE60,stroke:#1E8449,color:#fff
-    style SendEmail fill:#27AE60,stroke:#1E8449,color:#fff
+    style SendDirect fill:#A0A0A0,stroke:#7A7A7A,color:#fff
+    style SendSQL fill:#A0A0A0,stroke:#7A7A7A,color:#fff
+    style SendEmail fill:#A0A0A0,stroke:#7A7A7A,color:#fff
     
-    style Dashboard fill:#219653,stroke:#176B3A,color:#fff
+    style Dashboard fill:#4F4F4F,stroke:#333,color:#fff
     style End fill:#333333,stroke:#1F1F1F,color:#fff
 
 ```
