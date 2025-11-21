@@ -7,89 +7,45 @@
 
 ```mermaid
 graph TD
-    Start["🚀 البداية"] --> TelegramChoice{المستخدم يختار}
+    Start["👤 المستخدم يسأل سؤال"] --> Input["📱 Telegram Bot<br/>استقبال الرسالة"]
+    Input --> Stage1["🧠 المرحلة 1: التحليل<br/>Gemini 2.5-Flash"]
     
-    %% ===== TELEGRAM BOT PATH =====
-    TelegramChoice -->|Telegram App| TBot["📱 Telegram Bot API"]
-    TBot --> UserMsg["📨 رسالة المستخدم"]
+    Stage1 --> Decide{نوع الاستجابة؟}
     
-    UserMsg --> BotChoice{نوع الرسالة؟}
+    %% Path 1: Direct Answer from History
+    Decide -->|من السجل<br/>History| DirectPath["📋 الإجابة من<br/>آخر 5 محادثات"]
+    DirectPath --> SendDirect["📨 إرسال الإجابة<br/>مباشرة"]
     
-    BotChoice -->|أمر| Command["⚙️ معالجة الأمر<br/>Python + FastAPI"]
-    Command --> SaveDB["💾 حفظ في SQL Server<br/>users, organizations"]
-    SaveDB --> TelegramReply["📤 رد Telegram"]
+    %% Path 2: SQL Query
+    Decide -->|SQL Query| SQLPath["🔍 تصميم استعلام<br/>SQL"]
+    SQLPath --> Stage2["⚙️ المرحلة 2: التنفيذ<br/>Gemini 2.0-Flash"]
+    Stage2 --> ExecuteDB["🗄️ SQL Server<br/>تنفيذ الاستعلام"]
+    ExecuteDB --> ProcessResults["📊 معالجة النتائج<br/>إعادة الصياغة"]
+    ProcessResults --> SendSQL["📨 إرسال الإجابة"]
     
-    BotChoice -->|سؤال| Question["🤖 معالجة السؤال"]
-    Question --> Stage1["🔍 المرحلة 1: التحليل<br/>Gemini 2.5-Flash API"]
+    %% Path 3: Email Generation
+    Decide -->|Email| EmailPath["📧 توليد البريد<br/>Gemini 2.5-Flash"]
+    EmailPath --> Stage3["✉️ المرحلة 3: البريد"]
+    Stage3 --> GenerateEmail["🎨 صياغة محتوى البريد<br/>بتنسيق احترافي"]
+    GenerateEmail --> SendEmail["📤 Gmail SMTP<br/>إرسال البريد"]
     
-    Stage1 --> Decision{نوع الإجابة؟}
+    %% Logging and Tracking
+    SendDirect --> SaveConv["💾 حفظ في قاعدة البيانات"]
+    SendSQL --> SaveConv
+    SendEmail --> SaveConv
     
-    Decision -->|SQL Query| Stage2["⚙️ المرحلة 2: تنفيذ SQL<br/>SQL Server<br/>Gemini 2.0-Flash"]
-    Decision -->|إجابة مباشرة| Response1["📝 إجابة"]
-    Decision -->|إيميل| Stage3["📧 المرحلة 3: إيميل<br/>Gemini 2.5-Flash API"]
-    
-    Stage2 --> FormatResults["📊 تنسيق النتائج<br/>Gemini 2.0-Flash"]
-    FormatResults --> Response1
-    
-    Stage3 --> GenEmail["📧 توليد بريد<br/>Gmail SMTP"]
-    GenEmail --> Response1
-    
-    Response1 --> SaveConversation["💾 حفظ المحادثة<br/>SQL Server<br/>JSON Storage"]
-    SaveConversation --> TrackCost["💰 تتبع التكاليف<br/>حساب Tokens"]
-    TrackCost --> SendTelegram["📤 إرسال الرد<br/>Telegram API"]
-    SendTelegram --> Ready1["✅ انتظار رسالة جديدة"]
-    
-    %% ===== WEB DASHBOARD PATH =====
-    TelegramChoice -->|Web Browser| Dashboard["🌐 Web Dashboard"]
-    Dashboard --> Login["🔐 تسجيل الدخول"]
-    Login --> AuthCheck["✅ التحقق<br/>SQL Server<br/>dashboard_users"]
-    AuthCheck --> JWT["🔐 إنشاء JWT Token<br/>FastAPI"]
-    JWT --> DashLoad["📊 تحميل لوحة التحكم"]
-    
-    DashLoad --> DashChoice{الصفحة المختارة؟}
-    
-    DashChoice -->|الأعضاء| Members["👥 إدارة الأعضاء<br/>FastAPI API"]
-    Members --> MembersDB["💾 SQL Server<br/>organization_members"]
-    
-    DashChoice -->|القواعس| Databases["🗄️ إدارة قواعس البيانات<br/>FastAPI API"]
-    Databases --> DBConn["🔌 اختبار الاتصال<br/>database_connections"]
-    DBConn --> DBConnDB["💾 SQL Server<br/>database_connections"]
-    
-    DashChoice -->|الدعوات| Invites["🎫 إدارة الدعوات<br/>FastAPI API"]
-    Invites --> InvDB["💾 SQL Server<br/>invitations"]
-    
-    DashChoice -->|التكاليف| Costs["💰 لوحة التكاليف<br/>FastAPI API"]
-    Costs --> CostsDB["📊 استعلام<br/>SQL Server<br/>ModelUsage, StagesUsage"]
-    CostsDB --> CostsDisplay["📈 عرض الرسوم البيانية<br/>JavaScript Charts"]
-    
-    Members --> UpdateUI["🔄 تحديث الواجهة<br/>React / HTML+JS"]
-    Databases --> UpdateUI
-    Invites --> UpdateUI
-    CostsDisplay --> UpdateUI
-    
-    UpdateUI --> Logout["🔴 تسجيل الخروج<br/>حذف الجلسة"]
-    Logout --> Ready2["✅ العودة لصفحة الدخول"]
-    
-    %% Connection back
-    Ready1 --> TelegramChoice
-    Ready2 --> TelegramChoice
-    
-    %% ===== Backend Infrastructure =====
-    BackendGroup["🏗️ البنية التحتية<br/>Backend Infrastructure"]
-    BackendGroup -.->|جميع الطلبات| FastAPI["⚡ FastAPI Server<br/>Python + Async/Await"]
-    FastAPI -.->|قاعدة البيانات| SQLServer["💾 SQL Server<br/>SQLAlchemy ORM"]
-    FastAPI -.->|الذكاء الاصطناعي| Gemini["🤖 Google Gemini API<br/>عدة نماذج"]
-    FastAPI -.->|البريد الإلكتروني| Gmail["📧 Gmail SMTP<br/>إرسال الرسائل"]
+    SaveConv --> LogCosts["💰 تسجيل التكاليف<br/>حساب Tokens"]
+    LogCosts --> Dashboard["📊 Dashboard<br/>تحديث الإحصائيات"]
+    Dashboard --> End["✅ انتهى"]
     
     style Start fill:#0088cc,stroke:#005fa3,color:#fff
-    style TBot fill:#0088cc,stroke:#005fa3,color:#fff
     style Stage1 fill:#e74c3c,stroke:#c0392b,color:#fff
     style Stage2 fill:#9b59b6,stroke:#7d3c98,color:#fff
     style Stage3 fill:#27ae60,stroke:#1e8449,color:#fff
-    style Dashboard fill:#27ae60,stroke:#1e8449,color:#fff
-    style Costs fill:#3498db,stroke:#2980b9,color:#fff
-    style BackendGroup fill:#f39c12,stroke:#d68910,color:#fff
-    style FastAPI fill:#e67e22,stroke:#d35400,color:#fff
+    style ExecuteDB fill:#3498db,stroke:#2980b9,color:#fff
+    style SaveConv fill:#f39c12,stroke:#d68910,color:#fff
+    style Dashboard fill:#16a085,stroke:#138d75,color:#fff
+    style End fill:#27ae60,stroke:#1e8449,color:#fff
 ```
 
 ```mermaid
