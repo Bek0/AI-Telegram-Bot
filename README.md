@@ -6,9 +6,6 @@
 ### small workflow
 
 ```mermaid
-# Mermaid Flowchart - التقنيات مع سير العمل
-
-```mermaid
 graph TD
     Start["🚀 البداية"] --> TelegramChoice{المستخدم يختار}
     
@@ -93,7 +90,6 @@ graph TD
     style Costs fill:#3498db,stroke:#2980b9,color:#fff
     style BackendGroup fill:#f39c12,stroke:#d68910,color:#fff
     style FastAPI fill:#e67e22,stroke:#d35400,color:#fff
-```
 ```
 
 ```mermaid
