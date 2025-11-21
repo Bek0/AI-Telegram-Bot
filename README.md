@@ -12,13 +12,20 @@ graph TD
     
     Stage1 --> Decide{نوع الاستجابة؟}
     
-    %% Path 1 & 2: Direct Answer or SQL Query
-    Decide -->|من السجل أو SQL| Processing["⚙️ المعالجة<br/>Gemini 2.0-Flash"]
-    Processing --> SendResponse["📨 إرسال الإجابة"]
+    %% Path 1: Direct Answer from History
+    Decide -->|من السجل<br/>History| DirectPath["📋 الإجابة من<br/>آخر 5 محادثات"]
+    
+    %% Path 2: SQL Query
+    Decide -->|SQL Query| SQLPath["🔍 تصميم استعلام<br/>SQL"]
+    SQLPath --> Stage2["⚙️ المرحلة 2: التنفيذ وصياغة الجواب<br/>Gemini 2.0-Flash"]
     
     %% Path 3: Email Generation
     Decide -->|Email| EmailPath["📧 توليد البريد<br/>Gemini 2.5-Flash"]
     EmailPath --> SendEmail["📤 Gmail SMTP<br/>إرسال البريد"]
+    
+    %% Combine paths 1 and 2
+    DirectPath --> SendResponse["📨 إرسال الإجابة"]
+    Stage2 --> SendResponse
     
     %% Logging and Tracking
     SendResponse --> SaveConv["💾 حفظ في قاعدة البيانات"]
@@ -32,9 +39,8 @@ graph TD
     style Input fill:#0088cc,stroke:#005fa3,color:#fff
     style Stage1 fill:#e74c3c,stroke:#c0392b,color:#fff
     style Decide fill:#f39c12,stroke:#d68910,color:#fff
-    style Processing fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style SendResponse fill:#16a085,stroke:#138d75,color:#fff
-    style EmailPath fill:#3498db,stroke:#2980b9,color:#fff
+    style SendDirect fill:#16a085,stroke:#138d75,color:#fff
+    style SendSQL fill:#16a085,stroke:#138d75,color:#fff
     style SendEmail fill:#16a085,stroke:#138d75,color:#fff
     style SaveConv fill:#f39c12,stroke:#d68910,color:#fff
     style LogCosts fill:#f39c12,stroke:#d68910,color:#fff
