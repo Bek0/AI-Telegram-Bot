@@ -7,76 +7,6 @@
 
 ```mermaid
 graph TD
-    Start["🌐 المستخدم يفتح الويب"] --> Login["🔐 تسجيل الدخول<br/>Dashboard Login"]
-    Login --> Verify["✅ التحقق<br/>Password Hash"]
-    Verify --> CheckAuth{صحيح؟}
-    
-    CheckAuth -->|لا| Login
-    CheckAuth -->|نعم| CreateJWT["🔑 إنشاء جلسة<br/>JWT Token"]
-    
-    CreateJWT --> Dashboard["📊 لوحة التحكم"]
-    Dashboard --> Decide{اختر الفعل}
-    
-    %% Path 1: View Members
-    Decide -->|عرض الأعضاء| MembersView["👥 استعلام الأعضاء<br/>SQL Server"]
-    MembersView --> DisplayMembers["📋 عرض جدول الأعضاء"]
-    
-    %% Path 2: Manage Databases
-    Decide -->|إدارة قواعس البيانات| DBView["🗄️ استعلام القواعس<br/>SQL Server"]
-    DBView --> DisplayDBs["📋 عرض جدول القواعس"]
-    DisplayDBs --> DBAction{إجراء}
-    DBAction -->|إضافة| TestConn["✅ اختبار الاتصال"]
-    TestConn --> SaveDB["💾 حفظ في قاعدة البيانات"]
-    DBAction -->|حذف| DeleteDB["🗑️ حذف من قاعدة البيانات"]
-    SaveDB --> DisplayDBs
-    DeleteDB --> DisplayDBs
-    
-    %% Path 3: View Costs
-    Decide -->|التكاليف والإحصائيات| CostsView["💰 استعلام التكاليف<br/>SQL Server"]
-    CostsView --> AggregateData["📊 تجميع البيانات:<br/>النماذج • المراحل • المستخدمين"]
-    AggregateData --> DisplayCharts["📈 عرض الرسوم البيانية<br/>والجداول التفصيلية"]
-    
-    %% Path 4: Create Invitations
-    Decide -->|إنشاء دعوات| InviteView["🎫 توليد رمز الدعوة<br/>Generate Code"]
-    InviteView --> SaveInvite["💾 حفظ في قاعدة البيانات"]
-    SaveInvite --> DisplayInvite["🔗 عرض رابط الدعوة"]
-    
-    %% Return paths
-    DisplayMembers --> Dashboard
-    DisplayCharts --> Dashboard
-    DisplayInvite --> Dashboard
-    
-    Dashboard --> Logout{تسجيل الخروج؟}
-    Logout -->|نعم| DeleteJWT["🗑️ حذف الجلسة<br/>Clear Token"]
-    DeleteJWT --> End["✅ انتهى"]
-    Logout -->|لا| Dashboard
-    
-    style Start fill:#0088cc,stroke:#005fa3,color:#fff
-    style Login fill:#0088cc,stroke:#005fa3,color:#fff
-    style Verify fill:#e74c3c,stroke:#c0392b,color:#fff
-    style CheckAuth fill:#f39c12,stroke:#d68910,color:#fff
-    style CreateJWT fill:#27ae60,stroke:#1e8449,color:#fff
-    style Dashboard fill:#3498db,stroke:#2980b9,color:#fff
-    style Decide fill:#f39c12,stroke:#d68910,color:#fff
-    style MembersView fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style DBView fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style CostsView fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style InviteView fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style DisplayMembers fill:#16a085,stroke:#138d75,color:#fff
-    style DisplayDBs fill:#16a085,stroke:#138d75,color:#fff
-    style DisplayCharts fill:#16a085,stroke:#138d75,color:#fff
-    style DisplayInvite fill:#16a085,stroke:#138d75,color:#fff
-    style DBAction fill:#f39c12,stroke:#d68910,color:#fff
-    style TestConn fill:#3498db,stroke:#2980b9,color:#fff
-    style SaveDB fill:#27ae60,stroke:#1e8449,color:#fff
-    style DeleteDB fill:#e74c3c,stroke:#c0392b,color:#fff
-    style AggregateData fill:#3498db,stroke:#2980b9,color:#fff
-    style DeleteJWT fill:#e74c3c,stroke:#c0392b,color:#fff
-    style End fill:#27ae60,stroke:#1e8449,color:#fff
-```
-
-```mermaid
-graph TD
     Start["👤 المستخدم يسأل سؤال"] --> Input["📱 Telegram Bot<br/>استقبال الرسالة"]
     Input --> Stage1["🧠 المرحلة 1: التحليل<br/>Gemini 2.5-Flash"]
     
