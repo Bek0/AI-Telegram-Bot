@@ -58,6 +58,8 @@ graph TD
 ```
 
 ## Complete System Overview
+[Watch the demo video](media/recording-2025-11-23-195942_PhthBOkp.mp4)
+
 ---
 
 ## 1. What Is This System?
