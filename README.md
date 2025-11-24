@@ -241,7 +241,7 @@ Owner: Dashboard → Costs
 
 **Owner-Only Features**:
 - Member management (add/remove/view)
-![Member management](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_36.png)
+![Member management](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_36.png) 
 
 - Database administration (add/remove/view)
 ![Database administration](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_45.png)
