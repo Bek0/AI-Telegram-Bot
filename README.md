@@ -241,10 +241,10 @@ Owner: Dashboard → Costs
 
 **Owner-Only Features**:
 - Member management (add/remove/view)
-![Member management](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_36.png) 
+![Member management](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_3.png) 
 
 - Database administration (add/remove/view)
-![Database administration](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_45.png)
+![Database administration](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_4.png)
 
 - Invitation creation and management
 - Cost analytics (5 different views):
@@ -335,7 +335,7 @@ Example:
   Stage total: $0.0003
 ```
 
-![Cost Track](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-20_01_10.png)
+![Cost Track](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-20_01_1.png)
 
 ---
 
