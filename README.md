@@ -79,13 +79,6 @@ Organizations need a way to:
 - Maintain complete audit trails for compliance
 - Automate report generation and email distribution
 
-### Who It's For
-
-- Individual knowledge workers seeking self-service database access
-- Organizations requiring secure collaborative data exploration
-- Enterprise teams needing usage tracking and cost allocation
-- Finance & operations departments managing API costs
-
 ---
 
 ## 2. System Architecture
