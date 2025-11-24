@@ -71,8 +71,6 @@ This is an enterprise-grade ecosystem combining two integrated components:
 Both interfaces share the same backend services, ensuring consistency and single source of truth.
 
 ### The Problem It Solves
-
-Organizations need a way to:
 - Allow non-technical users to query databases without SQL knowledge
 - Collaborate securely on shared databases with role-based access
 - Track AI usage costs transparently 
