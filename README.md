@@ -330,6 +330,9 @@ Example:
   Output: 903 tokens @ $0.3/1M = $0.0002709
   Stage total: $0.0003
 ```
+
+![Cost Track](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-20_01_10.png)
+
 ---
 
 ## 8. Authentication
