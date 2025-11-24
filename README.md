@@ -1,7 +1,7 @@
 # Enterprise Telegram Bot + Dashboard System
 ## System workflows
 
-⚠️ IMPORTANT NOTICE: This project code is currently NOT FOR PUBLIC RELEASE. The codebase is proprietary and under active development. Documentation is provided for internal reference and stakeholder review only.
+⚠️ IMPORTANT NOTICE: This project code is currently NOT FOR PUBLIC RELEASE.
 
 ### small workflow
 
