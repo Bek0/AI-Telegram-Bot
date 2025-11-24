@@ -241,7 +241,11 @@ Owner: Dashboard → Costs
 
 **Owner-Only Features**:
 - Member management (add/remove/view)
+![Member management](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_36.png)
+
 - Database administration (add/remove/view)
+![Database administration](media/screencapture-127-0-0-1-8000-dashboard-2025-11-23-18_18_45.png)
+
 - Invitation creation and management
 - Cost analytics (5 different views):
   - Total cost overview
@@ -369,37 +373,7 @@ Example:
 
 ---
 
-## 9. Database Architecture
-
-### Two-Database Design
-
-**Manager Database**:
-- Stores: Users, organizations, members, databases, invitations
-- Purpose: Operational data
-- Access: Both bot and dashboard
-
-**Costs Database**:
-- Stores: Token counts, costs, model pricing
-- Purpose: Analytics and billing
-- Access: Both bot and dashboard (dashboard mostly reads)
-
-### Personal vs Organization Databases
-
-**Personal Databases**:
-- Owned by individual user
-- Access: User only
-- Managed via bot (/adddb command)
-- Cannot be shared
-
-**Organization Databases**:
-- Owned by organization entity
-- Access: All org members
-- Managed via dashboard (owner only)
-- Shared across team
-
----
-
-## 10. Email Service
+## 9. Email Service
 
 ### Email Generation
 
@@ -423,7 +397,7 @@ Template: Customizable greeting + body + signature
 
 ---
 
-## 11. Logging & Audit
+## 10. Logging & Audit
 
 ### What's Logged
 
@@ -458,7 +432,7 @@ logs/
 
 ---
 
-## 12. Rate Limiting & Concurrency
+## 11. Rate Limiting & Concurrency
 
 ### Rate Limiter (Token Bucket)
 
@@ -493,7 +467,7 @@ Q2 begins processing
 
 ---
 
-## 13. Conversation Memory
+## 12. Conversation Memory
 
 ### Sliding Window Architecture
 
@@ -515,7 +489,7 @@ Q2 begins processing
 
 ---
 
-## 15. Technology Stack
+## 13. Technology Stack
 
 **Backend**:
 - Python 3.9+
