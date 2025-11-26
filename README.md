@@ -3,6 +3,7 @@
 
 ## System workflow
 
+```mermaid
 graph TD
     Start["User question"] --> Input["Telegram Bot - Receive"]
     Input --> Analysis["Analysis"]
@@ -63,6 +64,7 @@ graph TD
     
     style Dashboard fill:#4F4F4F,stroke:#333,color:#fff
     style End fill:#333333,stroke:#1F1F1F,color:#fff
+```
 
 ## Complete System Overview
 [Watch the demo video](media/recording-2025-11-23-195942_PhthBOkp.mp4)
