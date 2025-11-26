@@ -3,8 +3,6 @@
 
 ## System workflow
 
-
-```mermaid
 graph TD
     Start["User question"] --> Input["Telegram Bot - Receive"]
     Input --> Analysis["Analysis"]
@@ -21,12 +19,19 @@ graph TD
     GenerateSQL --> SendSQL["Send SQL reply"]
     
     %% Path 3
+    Decide -->|RAG| RAGPath["Query Vector Store"]
+    RAGPath --> RetrieveDocs["Retrieve top 10 documents"]
+    RetrieveDocs --> RAGResponse["Generate RAG response"]
+    RAGResponse --> SendRAG["Send RAG reply"]
+    
+    %% Path 4
     Decide -->|Email| EmailPath["Generate email"]
     EmailPath --> SendEmail["Send via SMTP"]
     
     %% Logging
     SendDirect --> SaveConv["Save to database"]
     SendSQL --> SaveConv
+    SendRAG --> SaveConv
     SendEmail --> SaveConv
     
     SaveConv --> LogCosts["Log token usage"]
@@ -46,16 +51,18 @@ graph TD
     style DirectPath fill:#828282,stroke:#5E5E5E,color:#fff
     style SQLPath fill:#828282,stroke:#5E5E5E,color:#fff
     style EmailPath fill:#828282,stroke:#5E5E5E,color:#fff
+    style RAGPath fill:#828282,stroke:#5E5E5E,color:#fff
     style GenerateSQL fill:#828282,stroke:#5E5E5E,color:#fff
+    style RetrieveDocs fill:#828282,stroke:#5E5E5E,color:#fff
+    style RAGResponse fill:#828282,stroke:#5E5E5E,color:#fff
 
     style SendDirect fill:#A0A0A0,stroke:#7A7A7A,color:#fff
     style SendSQL fill:#A0A0A0,stroke:#7A7A7A,color:#fff
     style SendEmail fill:#A0A0A0,stroke:#7A7A7A,color:#fff
+    style SendRAG fill:#A0A0A0,stroke:#7A7A7A,color:#fff
     
     style Dashboard fill:#4F4F4F,stroke:#333,color:#fff
     style End fill:#333333,stroke:#1F1F1F,color:#fff
-
-```
 
 ## Complete System Overview
 [Watch the demo video](media/recording-2025-11-23-195942_PhthBOkp.mp4)
