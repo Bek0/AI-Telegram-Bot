@@ -555,16 +555,7 @@ Template: Customizable greeting + body + signature
 - Embedding Model: `models/gemini-embedding-001` (Google Generative AI)
 - Vector Dimension: 768
 - Metric: Cosine similarity
-
-### Document Management
-
-**Upload Process**:
-1. User uploads document via Telegram or Dashboard
-2. Document stored in `documents` table
-3. Content chunked and converted to embeddings
-4. Embeddings pushed to Pinecone index
-5. Document metadata linked to user/organization
-
+- 
 **Retrieval Process**:
 1. User asks question (RAG method detected)
 2. Question converted to embedding
@@ -572,13 +563,6 @@ Template: Customizable greeting + body + signature
 4. Documents passed to LLM as context
 5. LLM generates synthesized answer
 6. Query logged with source documents referenced
-
-### Supported Document Types
-
-- PDF documents
-- Text files (.txt)
-- Word documents (.docx)
-- Markdown files (.md)
 
 ---
 
@@ -598,28 +582,7 @@ Template: Customizable greeting + body + signature
 - Errors and exceptions
 - Rate limit events
 - All logged to `conversations` and `conversation_messages` tables
-
-### Database Tables for Logging
-
-```
-SQL Server:
-  ├── conversations          # Chat sessions
-  ├── conversation_messages  # Individual messages
-  ├── queries               # SQL query history
-  ├── cost_logs            # Detailed cost records
-  ├── document_collections # Document groups
-  ├── documents            # Document metadata
-  └── activity_logs        # General activity trail
-```
-
-### Data Retention
-
-- Activity logs: Indefinite (SQL Server)
-- Conversation history: Indefinite (SQL Server)
-- In-memory cache: Last 5 conversations
-- Cost database: Indefinite (SQL Server)
-- Sensitive data: NOT logged (passwords, API keys)
-
+- 
 ---
 
 ## 13. Rate Limiting & Concurrency
@@ -630,13 +593,6 @@ SQL Server:
 - Sustainable rate: 1 request/second
 - Burst capacity: 3 requests
 - Prevents: Server overload, runaway costs
-
-**Example**:
-```
-T=0s: User sends 3 questions (uses burst) ✓
-T=0.1s: 4th question rejected (rate limited) ✗
-T=1s: Bucket refilled, user can send again ✓
-```
 
 ### Concurrency Control
 
@@ -704,40 +660,6 @@ Q2 begins processing
 - Gmail SMTP (email)
 - Google Cloud (LLM & embeddings)
 - Pinecone Cloud (vector storage)
-
----
-
-## 16. Configuration & Environment Variables
-
-```env
-# Telegram Bot
-BOT_TOKEN=your_telegram_token
-ADMIN_TELEGRAM_IDS=123456789,987654321
-
-# Database
-DATABASE_URL=mssql+pyodbc://user:password@server/database?driver=ODBC+Driver+17+for+SQL+Server
-SQL_SERVER_HOST=localhost
-SQL_SERVER_PORT=1433
-SQL_SERVER_DATABASE=enterprise_bot
-
-# LLM Services
-GOOGLE_API_KEY=your_google_api_key
-GEMINI_MODEL_LARGE=gemini-2.5-flash
-GEMINI_MODEL_SMALL=gemini-2.0-flash
-
-# Vector Store
-PINECONE_API_KEY=your_pinecone_key
-PINECONE_INDEX_NAME=allinformations
-PINECONE_ENVIRONMENT=us-east-1
-
-# Email Service
-BOT_EMAIL=your_email@gmail.com
-EMAIL_APP_PASSWORD=your_app_password
-
-# Dashboard
-DASHBOARD_SECRET_KEY=your_secret_key
-DASHBOARD_PORT=8000
-```
 
 ---
 
