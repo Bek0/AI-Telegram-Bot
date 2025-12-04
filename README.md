@@ -82,7 +82,7 @@ graph TD
     FromRAG --> Save
     FromEmail --> Save
 
-    Save --> End["Done"]
+    Save --> End["Send Answer"]
 
     %% Styling
     style Start fill:#4F4F4F,color:#fff
