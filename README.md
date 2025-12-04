@@ -72,10 +72,10 @@ graph TD
 graph TD
     Start["User Message"] --> Route["LLM Routing"]
 
-    Route -->|History| FromHistory["Reply from Conversation Memory"]
-    Route -->|SQL| FromSQL["Generate SQL → Run Query → Reply"]
-    Route -->|RAG| FromRAG["Retrieve Docs → RAG Answer"]
-    Route -->|Email| FromEmail["Generate Email Reply"]
+    Route -->|History| FromHistory["Conversation Memory"]
+    Route -->|SQL| FromSQL["SQL Query"]
+    Route -->|RAG| FromRAG["RAG Answer"]
+    Route -->|Email| FromEmail["Generate Email"]
 
     FromHistory --> Save["Save & Log"]
     FromSQL --> Save
