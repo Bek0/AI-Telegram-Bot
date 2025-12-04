@@ -68,6 +68,34 @@ graph TD
 
 ```
 
+```mermaid
+graph TD
+    Start["User Message"] --> Route["LLM Routing"]
+
+    Route -->|History| FromHistory["Reply from Conversation Memory"]
+    Route -->|SQL| FromSQL["Generate SQL → Run Query → Reply"]
+    Route -->|RAG| FromRAG["Retrieve Docs → RAG Answer"]
+    Route -->|Email| FromEmail["Generate Email Reply"]
+
+    FromHistory --> Save["Save & Log"]
+    FromSQL --> Save
+    FromRAG --> Save
+    FromEmail --> Save
+
+    Save --> End["Done"]
+
+    %% Styling
+    style Start fill:#4F4F4F,color:#fff
+    style Route fill:#BDBDBD,color:#000
+    style FromHistory fill:#828282,color:#fff
+    style FromSQL fill:#828282,color:#fff
+    style FromRAG fill:#828282,color:#fff
+    style FromEmail fill:#828282,color:#fff
+    style Save fill:#A0A0A0,color:#fff
+    style End fill:#333333,color:#fff
+
+```
+
 ## Complete System Overview
 [Watch the demo video](media/recording-2025-11-23-195942_PhthBOkp.mp4)
 
